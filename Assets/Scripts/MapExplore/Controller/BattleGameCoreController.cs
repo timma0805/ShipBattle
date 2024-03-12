@@ -27,6 +27,12 @@ public class BattleGameCoreController : MonoBehaviour
     [SerializeField]
     private GameObject eventPanelPrefab;
     private SpecialEventController eventController;
+    [SerializeField]
+    private GameObject miniBattlePrefab;
+    private MiniBattleCoreController miniBattleController;
+
+    [SerializeField]
+    private Camera uiCamera;
 
     //Current Data
     private BattleStage curBattleStage;
@@ -65,18 +71,35 @@ public class BattleGameCoreController : MonoBehaviour
 
     private void InitPanels()
     {
-        mapController = Instantiate(oceanMapPrefab, transform).GetComponent<MapController>();
+        mapController = Instantiate(oceanMapPrefab).GetComponent<MapController>();
+        mapController.GetComponent<Canvas>().worldCamera = uiCamera;
         mapController.gameObject.SetActive(false);
-        villageController = Instantiate(villagePanelPrefab, transform).GetComponent<VillageController>();
+
+        villageController = Instantiate(villagePanelPrefab).GetComponent<VillageController>();
+        villageController.GetComponent<Canvas>().worldCamera = uiCamera;
         villageController.gameObject.SetActive(false);
         villageController.Init(() => {
             LoadBattleStage(BattleStage.EndVillage);
         });
-        eventController = Instantiate(eventPanelPrefab, transform).GetComponent<SpecialEventController>();
+
+        eventController = Instantiate(eventPanelPrefab).GetComponent<SpecialEventController>();
+        eventController.GetComponent<Canvas>().worldCamera = uiCamera;
         eventController.Init(() => {
             LoadBattleStage(BattleStage.EndEvent);
         });
         eventController.gameObject.SetActive(false);
+
+        miniBattleController = Instantiate(miniBattlePrefab).GetComponent<MiniBattleCoreController>();
+        miniBattleController.GetComponent<Canvas>().worldCamera = uiCamera;
+        miniBattleController.Init(() => {
+            LoadBattleStage(BattleStage.EndEvent);
+        });
+        miniBattleController.gameObject.SetActive(false);
+    }
+
+    public Camera GetUICamera()
+    {
+        return uiCamera;
     }
 
     private void ShowPlayerStats()
@@ -110,9 +133,11 @@ public class BattleGameCoreController : MonoBehaviour
             case BattleStage.EndEvent:
                 EndEvent();
                 break;
-            case BattleStage.StartBattle: 
+            case BattleStage.StartBattle:
+                StartEnemyBattle();
                 break;
             case BattleStage.EndBattle: 
+                EndEnemyBattle();
                 break;
             case BattleStage.StartVillage:
                 StartVillage();
@@ -194,6 +219,15 @@ public class BattleGameCoreController : MonoBehaviour
     private async Task EndVillage()
     {
         villageController.gameObject.SetActive(false);
+    }
+
+    private async Task StartEnemyBattle()
+    {
+        miniBattleController.StartBattle();
+    }
+    private async Task EndEnemyBattle()
+    {
+        miniBattleController.gameObject.SetActive(false);
     }
 
 

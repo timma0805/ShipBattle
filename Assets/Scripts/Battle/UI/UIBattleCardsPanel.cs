@@ -6,7 +6,6 @@ using UnityEngine;
 
 public class UIBattleCardsPanel : MonoBehaviour
 {
-    [SerializeField]
     private Camera uiCamera;
     [SerializeField]
     private GameObject cardPrefab;
@@ -35,9 +34,9 @@ public class UIBattleCardsPanel : MonoBehaviour
     private int drawCardAvailableCount = 1;
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        
+        uiCamera = BattleGameCoreController.Instance.GetUICamera();
     }
 
     // Update is called once per frame

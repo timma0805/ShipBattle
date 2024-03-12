@@ -7,7 +7,7 @@ public class BattlePlayerController : MonoBehaviour
 {
     private BattlePlayerData battlePlayerData;
     private BattlePlayer battlePlayer;
-    private BattleCoreController coreController;
+    private MiniBattleCoreController battleController;
 
     // Start is called before the first frame update
     void Start()
@@ -21,9 +21,9 @@ public class BattlePlayerController : MonoBehaviour
         
     }
 
-    public async Task Init(BattleCoreController controller, GameObject playerObj)
+    public async Task Init(MiniBattleCoreController controller, GameObject playerObj)
     {
-        coreController = controller;
+        battleController = controller;
 
         if (playerObj.GetComponent<BattlePlayer>() == null)
             battlePlayer = playerObj.AddComponent<BattlePlayer>();

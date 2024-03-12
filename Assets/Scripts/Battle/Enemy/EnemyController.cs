@@ -11,7 +11,7 @@ public class EnemyController : MonoBehaviour
     private int[] enemyIndexList;
     private EnemyData[] enemyDataList;
     private BattleEnemy[] battleEnemiesList;
-    private BattleCoreController coreController;
+    private MiniBattleCoreController battleController;
 
     public GameObject[] GetEnemiesPrefabs(int[] _enemyIndexList)
     {
@@ -31,9 +31,9 @@ public class EnemyController : MonoBehaviour
         return enemyPrefabs;
     }
 
-    public async Task Init(BattleCoreController controller,  GameObject[] enemiesObjs)
+    public async Task Init(MiniBattleCoreController controller,  GameObject[] enemiesObjs)
     {
-        coreController = controller;
+        battleController = controller;
 
         battleEnemiesList = new BattleEnemy[enemiesObjs.Length];
 

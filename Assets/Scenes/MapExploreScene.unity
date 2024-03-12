@@ -252,6 +252,8 @@ MonoBehaviour:
   oceanMapPrefab: {fileID: 8980754316159181183, guid: 5cbb59fac15cd5f44bdf51967edaa9d1, type: 3}
   villagePanelPrefab: {fileID: 2699222906587338457, guid: e154c512981d1f44eacb456630d4a423, type: 3}
   eventPanelPrefab: {fileID: 4457317075173079640, guid: 370e31478c65b78449d10fc62ac118e9, type: 3}
+  miniBattlePrefab: {fileID: 6405318378280462566, guid: bbee6cb0bdbafbc4cb39988db417bb2a, type: 3}
+  uiCamera: {fileID: 349075794}
 --- !u!4 &481702592
 Transform:
   m_ObjectHideFlags: 0

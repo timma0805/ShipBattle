@@ -11,8 +11,7 @@ public class BattleCardController : MonoBehaviour
 
     private BattleEnemy[] enemyDatas;
     private BattlePlayer playerData;
-    private BattleCoreController coreController;
-
+    private MiniBattleCoreController battleController;
     // Start is called before the first frame update
     void Start()
     {
@@ -24,9 +23,9 @@ public class BattleCardController : MonoBehaviour
         
     }
 
-    public void Init(BattleCoreController controller)
+    public void Init(MiniBattleCoreController _battleController)
     {
-        coreController = controller;
+        battleController = _battleController;
         uIBattleCardsPanel.Init(this, cardListsSO.cardDataList);
     }
 
@@ -114,18 +113,19 @@ public class BattleCardController : MonoBehaviour
         for(int i = 0; i < card.data.effectList.Count; i++)
         {
             CardEffect effect = card.data.effectList[i];
-            if(effect.haveDirection)
-                coreController.ShowCardEffectRange(effect.rangeX, effect.rangeY, effect.direction, Color.red);
+            //if(effect.haveDirection)
+            //    coreController.ShowCardEffectRange(effect.rangeX, effect.rangeY, effect.direction, Color.red);
         }
     }
 
     public bool UsePlayerCard(Card card)
     {
-        return coreController.UsePlayerCard(card);
+        return true;
+        //return coreController.UsePlayerCard(card);
     }
 
     public void ResetMapTiles()
     {
-        coreController.ResetMapTiles();
+        //coreController.ResetMapTiles();
     }
 }

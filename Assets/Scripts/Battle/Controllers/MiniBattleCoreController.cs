@@ -1,12 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 
-[RequireComponent(typeof(EnemyController))]
-[RequireComponent(typeof(PlayerController))]
-
-public class BattleCoreController : MonoBehaviour
+public class MiniBattleCoreController : MonoBehaviour
 {
     public enum BattleStage
     {
@@ -18,15 +16,15 @@ public class BattleCoreController : MonoBehaviour
         PauseGame
     }
 
-    public BattleMapController mapController;
     public BattleCardController cardController;
-    public EnemyController enemyController;
     public BattlePlayerController playerController;
-    public UIBattleCoreController uIBattleCoreController;
+    public EnemyController enemyController;
 
     private BattleStage previousStage;
     private BattleStage currentStage;
     private bool isPause = false;
+
+    private Action finishBattleCallback;
 
     //Temp
     public int selectedMapIndex = 0;
@@ -34,22 +32,27 @@ public class BattleCoreController : MonoBehaviour
     private void Awake()
     {
         currentStage = BattleStage.Init;
-
-        if(playerController == null)
-            playerController = GetComponent<BattlePlayerController>();
-        if (enemyController == null)
-            enemyController = GetComponent<EnemyController>();
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        RunStage(BattleStage.Init);
     }
 
     // Update is called once per frame
     void Update()
     {
+    }
+
+    public void Init(Action callback)
+    {
+        finishBattleCallback = callback;
+        cardController.Init(this);
+    }
+
+    public void StartBattle()
+    {
+        RunStage(BattleStage.Init);
     }
 
     private void RunStage(BattleStage nextStage)
@@ -61,12 +64,10 @@ public class BattleCoreController : MonoBehaviour
         previousStage = currentStage;
         currentStage = nextStage;
 
-        cardController.UpdateCharacterData(playerController.GetBattlePlayer(), enemyController.GetAllEnemies());
-
         switch (currentStage)
         {
             case BattleStage.Init:
-                InitControllers();
+                InitBattle();
                 break;
             case BattleStage.StartGame:
                 StartGame();
@@ -85,31 +86,11 @@ public class BattleCoreController : MonoBehaviour
         }
     }
 
-    private async Task InitControllers()
+    private async Task InitBattle()
     {
-        Debug.Log("InitControllers");
-        int[] enemyIndexList = await mapController.Init(new BattleMapController.BattleMapInitInitParameters() { mapIndex = selectedMapIndex});
-        Debug.Log("mapController init: " + enemyIndexList.Length);
-        GameObject playerObj = playerController.GetPlayerPrefab();
-        Debug.Log("playerController init: " + playerObj.name);
-        GameObject[] enemyObjs = enemyController.GetEnemiesPrefabs(enemyIndexList);
-        Debug.Log("enemyController init: " + enemyObjs.Length);
-        await mapController.SpawnCharacters(new BattleMapController.BattleMapCharactersParameters() {
-            playerWidth = playerController.GetPlayerWidth(),
-            playerLength = playerController.GetPlayerLength(),
-            playerPrefab = playerObj,
-            enemyPrefabsList = enemyObjs,
-            enemyWidthList = enemyController.GetTargetEnemiesWidth(),
-            enemyLengthList = enemyController.GetTargetEnemiesLength()
-        });
-        Debug.Log("mapController init: " + mapController.GetEnemyObjs().Length);
-
-        await playerController.Init(this, mapController.GetPlayerObj());
-        await enemyController.Init(this, mapController.GetEnemyObjs());
-        cardController.Init(this);
+        Debug.Log("InitBattle");     
+        gameObject.SetActive(true);
         RunStage(BattleStage.StartGame);
-        uIBattleCoreController.CheckCharacterDataUpdate(playerController.GetBattlePlayer(), enemyController.GetAllEnemies());
-
     }
 
     private async Task StartGame()
@@ -119,7 +100,6 @@ public class BattleCoreController : MonoBehaviour
 
     private async Task PlayerTurn()
     {
-        playerController.StartPlayerTurn();
         cardController.StartPlayerTurn();
     }
 
@@ -131,12 +111,7 @@ public class BattleCoreController : MonoBehaviour
         if (!ProcessUsingCard(card))
             return false;
 
-        uIBattleCoreController.CheckCharacterDataUpdate(playerController.GetBattlePlayer(), enemyController.GetAllEnemies());
-
-        if (enemyController.CheckIsAllEnemyDead())
-            RunStage(BattleStage.EndGame);
-        else
-            EndPlayerTurn();
+        EndPlayerTurn();
 
         return true;
     }
@@ -148,20 +123,15 @@ public class BattleCoreController : MonoBehaviour
 
     private async Task EnemyTurn()
     {
-        enemyController.StartEnemyTurn();
     }
 
    public void DoEnemyAction()
     {
-        playerController.GetBattlePlayer().BeAttacked(-1);
         EndEnemyTurn();
     }
 
     private async Task EndEnemyTurn()
-    {
-        if (enemyController.CheckIsAllEnemyDead())
-            RunStage(BattleStage.EndGame);
-        else
+    {      
             RunStage(BattleStage.PlayerTurn);
     }
 
@@ -206,13 +176,13 @@ public class BattleCoreController : MonoBehaviour
 
     public void ShowCardEffectRange(int rangeX, int rangeY, FaceDirection direction, Color color)
     {
-        Vector2 startPos = mapController.GetPlayerCurrentPos();
-        mapController.ShowCardEffectWithTitlesColor(startPos, rangeX, rangeY, direction, color);
+        //Vector2 startPos = mapController.GetPlayerCurrentPos();
+        //mapController.ShowCardEffectWithTitlesColor(startPos, rangeX, rangeY, direction, color);
     }
 
     public void ResetMapTiles()
     {
-        mapController.ResetMapTitlesColor();
+        //mapController.ResetMapTitlesColor();
     }
 
 }
