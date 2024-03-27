@@ -26,8 +26,6 @@ public class BattleMapController : MonoBehaviour
     public bool testTargetIsPlayer;
 
     [SerializeField]
-    private BattleMapDataListSO battleMapDataListSO;
-    [SerializeField]
     private GameObject mapPanelObj;
     [SerializeField]
     private GameObject tilePrefab;
@@ -107,7 +105,7 @@ public class BattleMapController : MonoBehaviour
     private void ReadMapData(int mapIndex)
     {
         //Read Data From BattleMapDataListSO
-        mapData = battleMapDataListSO.mapDataList[mapIndex];
+        mapData = new BattleMapData();
 
         mapX = mapData.Width;
         mapY = mapData.Length;

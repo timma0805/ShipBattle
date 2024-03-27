@@ -74,9 +74,9 @@ using UnityEngine;
     public enum CardType
     {
         None,
-        AttackMelee,
-        AttackLongRange,
+        Attack,
         Defend,
+        Heal,
         MovePosition,
         MoveShip,
         Other
@@ -137,7 +137,9 @@ public enum FaceDirection
     Front,
     Right,
     Back,
-    Left
+    Left,
+    All,
+    No
 }
 
 public enum MapTitleEffect

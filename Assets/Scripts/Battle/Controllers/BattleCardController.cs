@@ -6,8 +6,6 @@ public class BattleCardController : MonoBehaviour
 {
     [SerializeField]
     private UIBattleCardsPanel uIBattleCardsPanel;
-    [SerializeField]
-    private CardDataListSO cardListsSO;
 
     private BattleEnemy[] enemyDatas;
     private BattlePlayer playerData;
@@ -23,10 +21,10 @@ public class BattleCardController : MonoBehaviour
         
     }
 
-    public void Init(MiniBattleCoreController _battleController)
+    public void Init(MiniBattleCoreController _battleController, List<CardData> cardDb)
     {
         battleController = _battleController;
-        uIBattleCardsPanel.Init(this, cardListsSO.cardDataList);
+        uIBattleCardsPanel.Init(this, cardDb);
     }
 
     public void StartPlayerTurn()
@@ -42,7 +40,7 @@ public class BattleCardController : MonoBehaviour
 
     public bool CheckCardCondition(Card card)
     {
-        Debug.Log("CheckCardCondition:" + card.data.name);
+        Debug.Log("CheckCardCondition:" + card.data.Name);
         bool canUse = true;
 
         Vector2 comparePos;
@@ -51,71 +49,71 @@ public class BattleCardController : MonoBehaviour
         string compareStr = "";
 
         //check condition
-        for (int i = 0; i < card.data.conditionList.Count; i++)
-        {
-            //process condition
-            CardCondition condition = card.data.conditionList[i];
+        //for (int i = 0; i < card.data.conditionList.Count; i++)
+        //{
+        //    //process condition
+        //    CardCondition condition = card.data.conditionList[i];
 
-            //Use on Player
-            if (condition.effectTarget == CardCondition.EffectTarget.Self)
-            {
-                if (condition.conditionValue == CardCondition.ConditionValue.HP)
-                {
-                    compareInt = playerData.playerData.MaxShipBodyHP;
-                }
-                else if (condition.conditionValue == CardCondition.ConditionValue.MP)
-                {
-                    //compareInt = playerData.playerData.MP;
-                }
-                else if (condition.conditionValue == CardCondition.ConditionValue.Position)
-                {
-                    comparePos = playerData.currentPos;
-                }
-                else if (condition.conditionValue == CardCondition.ConditionValue.CharacterStatus)
-                {
-                    compareBool = playerData.playerStatusList.FindIndex(x => x == (CharacterStatus)int.Parse(condition.conditionCompareValueStr)) > 0;
-                }
-                else if (condition.conditionValue == CardCondition.ConditionValue.FaceDirection)
-                {
-                    compareInt = (int)playerData.currentDirection;
-                }
-                else
-                    compareStr = "Not Found";
-            }
+        //    //Use on Player
+        //    if (condition.effectTarget == CardCondition.EffectTarget.Self)
+        //    {
+        //        if (condition.conditionValue == CardCondition.ConditionValue.HP)
+        //        {
+        //            compareInt = playerData.playerData.MaxShipBodyHP;
+        //        }
+        //        else if (condition.conditionValue == CardCondition.ConditionValue.MP)
+        //        {
+        //            //compareInt = playerData.playerData.MP;
+        //        }
+        //        else if (condition.conditionValue == CardCondition.ConditionValue.Position)
+        //        {
+        //            comparePos = playerData.currentPos;
+        //        }
+        //        else if (condition.conditionValue == CardCondition.ConditionValue.CharacterStatus)
+        //        {
+        //            compareBool = playerData.playerStatusList.FindIndex(x => x == (CharacterStatus)int.Parse(condition.conditionCompareValueStr)) > 0;
+        //        }
+        //        else if (condition.conditionValue == CardCondition.ConditionValue.FaceDirection)
+        //        {
+        //            compareInt = (int)playerData.currentDirection;
+        //        }
+        //        else
+        //            compareStr = "Not Found";
+        //    }
 
-            if (condition.conditionCompareValueType == CardCondition.ConditionCompareValueType.Boolean)
-            {
-                if (compareBool != (bool.TrueString == condition.conditionCompareValueStr))
-                    return false;
-            }
-            else if (condition.conditionCompareValueType == CardCondition.ConditionCompareValueType.Integer)
-            {
-                if (compareInt != int.Parse(condition.conditionCompareValueStr))
-                    return false;
-            }
-            else if (condition.conditionCompareValueType == CardCondition.ConditionCompareValueType.String)
-            {
-                if (compareStr != condition.conditionCompareValueStr)
-                    return false;
-            }
-            else if (condition.conditionCompareValueType == CardCondition.ConditionCompareValueType.Other)
-            {
-                if (condition.conditionValue == CardCondition.ConditionValue.CharacterStatus && !compareBool)
-                    return false;
-            }
-        }
+        //    if (condition.conditionCompareValueType == CardCondition.ConditionCompareValueType.Boolean)
+        //    {
+        //        if (compareBool != (bool.TrueString == condition.conditionCompareValueStr))
+        //            return false;
+        //    }
+        //    else if (condition.conditionCompareValueType == CardCondition.ConditionCompareValueType.Integer)
+        //    {
+        //        if (compareInt != int.Parse(condition.conditionCompareValueStr))
+        //            return false;
+        //    }
+        //    else if (condition.conditionCompareValueType == CardCondition.ConditionCompareValueType.String)
+        //    {
+        //        if (compareStr != condition.conditionCompareValueStr)
+        //            return false;
+        //    }
+        //    else if (condition.conditionCompareValueType == CardCondition.ConditionCompareValueType.Other)
+        //    {
+        //        if (condition.conditionValue == CardCondition.ConditionValue.CharacterStatus && !compareBool)
+        //            return false;
+        //    }
+        //}
 
         return canUse;
     }
 
     public void ShowEffectRange(Card card)
     {
-        for(int i = 0; i < card.data.effectList.Count; i++)
-        {
-            CardEffect effect = card.data.effectList[i];
-            //if(effect.haveDirection)
-            //    coreController.ShowCardEffectRange(effect.rangeX, effect.rangeY, effect.direction, Color.red);
-        }
+        //for(int i = 0; i < card.data.effectList.Count; i++)
+        //{
+        //    CardEffect effect = card.data.effectList[i];
+        //    //if(effect.haveDirection)
+        //    //    coreController.ShowCardEffectRange(effect.rangeX, effect.rangeY, effect.direction, Color.red);
+        //}
     }
 
     public bool UsePlayerCard(Card card)

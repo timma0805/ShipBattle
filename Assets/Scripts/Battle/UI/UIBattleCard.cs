@@ -71,9 +71,9 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     {
         cardData = card;
 
-        bgImg.sprite = card.data.texture;
-        nameTxt.text = card.data.name;
-        costTxt.text = card.data.cost.ToString();
+       // bgImg.sprite = card.data.texture;
+        nameTxt.text = card.data.Name;
+        costTxt.text = card.data.Cost.ToString();
         typeTxt.text = card.GetCardTypeName();
         detailTxt.text = card.GetCardDetailString();
     }
@@ -100,7 +100,7 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
 
     private  void onClickCard()
     {
-        Debug.Log("ClickCard: " + cardData.data.cardIndex);
+        Debug.Log("ClickCard: " + cardData.data.ID);
     }
 
     protected override void OnPointerDown()

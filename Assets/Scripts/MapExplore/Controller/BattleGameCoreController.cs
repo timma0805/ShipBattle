@@ -15,7 +15,8 @@ public class BattleGameCoreController : MonoBehaviour
         get { return instance; }
     }
 
-
+    [SerializeField]
+    private JsonManager jsonManager;
     [SerializeField]
     private PlayerController playerController;
     [SerializeField]
@@ -69,8 +70,11 @@ public class BattleGameCoreController : MonoBehaviour
 
     #endregion
 
-    private void InitPanels()
+    private async Task InitPanels()
     {
+        //Read Data from Json
+        await jsonManager.Int();
+
         mapController = Instantiate(oceanMapPrefab).GetComponent<MapController>();
         mapController.GetComponent<Canvas>().worldCamera = uiCamera;
         mapController.gameObject.SetActive(false);
@@ -93,7 +97,8 @@ public class BattleGameCoreController : MonoBehaviour
         miniBattleController.GetComponent<Canvas>().worldCamera = uiCamera;
         miniBattleController.Init(() => {
             LoadBattleStage(BattleStage.EndEvent);
-        });
+        },
+        jsonManager.cardDB.cards);
         miniBattleController.gameObject.SetActive(false);
     }
 

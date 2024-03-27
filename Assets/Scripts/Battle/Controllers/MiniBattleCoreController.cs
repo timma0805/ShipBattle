@@ -44,10 +44,10 @@ public class MiniBattleCoreController : MonoBehaviour
     {
     }
 
-    public void Init(Action callback)
+    public void Init(Action callback, List<CardData> cardDb)
     {
         finishBattleCallback = callback;
-        cardController.Init(this);
+        cardController.Init(this, cardDb);
     }
 
     public void StartBattle()
@@ -148,28 +148,28 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private bool ProcessUsingCard(Card card)
     {
-        if (!playerController.UseMP(card.data.cost))
+        if (!playerController.UseMP(card.data.Cost))
             return false;
 
-        for (int i = 0; i < card.data.effectList.Count; i++)
-        {
-            //process effect
-            var effect = card.data.effectList[i];
-            if (card.data.cardType == CardType.AttackMelee)
-            {
-                if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
-                    enemyController.GetTargetEnemy().BeAttacked(int.Parse(effect.effectValueStr));
-                else if (effect.effectTarget == CardEffect.EffectTarget.Player)
-                    playerController.GetBattlePlayer().BeAttacked(int.Parse(effect.effectValueStr));
-            }
-            else if (card.data.cardType == CardType.Defend)
-            {
-                if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
-                    enemyController.GetTargetEnemy().BeDefenced(int.Parse(effect.effectValueStr));
-                else if (effect.effectTarget == CardEffect.EffectTarget.Player)
-                    playerController.GetBattlePlayer().BeDefenced(int.Parse(effect.effectValueStr));
-            }
-        }
+        //for (int i = 0; i < card.data.effectList.Count; i++)
+        //{
+        //    //process effect
+        //    var effect = card.data.effectList[i];
+        //    if (card.data.Type == CardType.Attack)
+        //    {
+        //        if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
+        //            enemyController.GetTargetEnemy().BeAttacked(int.Parse(effect.effectValueStr));
+        //        else if (effect.effectTarget == CardEffect.EffectTarget.Player)
+        //            playerController.GetBattlePlayer().BeAttacked(int.Parse(effect.effectValueStr));
+        //    }
+        //    else if (card.data.Type == CardType.Defend)
+        //    {
+        //        if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
+        //            enemyController.GetTargetEnemy().BeDefenced(int.Parse(effect.effectValueStr));
+        //        else if (effect.effectTarget == CardEffect.EffectTarget.Player)
+        //            playerController.GetBattlePlayer().BeDefenced(int.Parse(effect.effectValueStr));
+        //    }
+        //}
 
         return true;
     }

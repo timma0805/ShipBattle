@@ -217,6 +217,7 @@ GameObject:
   - component: {fileID: 481702592}
   - component: {fileID: 481702591}
   - component: {fileID: 481702590}
+  - component: {fileID: 481702593}
   m_Layer: 0
   m_Name: CoreController
   m_TagString: Untagged
@@ -248,6 +249,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6e7c8a89ffbf17845811b350303d9629, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  jsonManager: {fileID: 481702593}
   playerController: {fileID: 481702590}
   oceanMapPrefab: {fileID: 8980754316159181183, guid: 5cbb59fac15cd5f44bdf51967edaa9d1, type: 3}
   villagePanelPrefab: {fileID: 2699222906587338457, guid: e154c512981d1f44eacb456630d4a423, type: 3}
@@ -269,6 +271,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &481702593
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 481702589}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3fc15eb234460e489cfcd058aafc4dc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0

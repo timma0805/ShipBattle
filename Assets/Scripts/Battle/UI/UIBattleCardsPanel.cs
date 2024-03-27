@@ -153,7 +153,7 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     private async Task AddToCurrentCards(Card card)
     {
-        Debug.Log("AddToCurrentCards: " + card.data.name);
+        Debug.Log("AddToCurrentCards: " + card.data.Name);
 
         currentCardList.Add(card);
         UIBattleCard currentCard;
@@ -202,7 +202,7 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     public void TryToUseCard(Card card)
     {
-        Debug.Log("TryToUseCard:" + card.data.cardIndex);
+        Debug.Log("TryToUseCard:" + card.data.ID);
         cardController.ResetMapTiles();
 
         if (!CheckMouseInDragArea())

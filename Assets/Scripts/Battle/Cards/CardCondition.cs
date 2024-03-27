@@ -14,8 +14,10 @@ public class CardCondition
 
     public enum EffectTarget
     {
+        Any,
         Self,
-        Enemy
+        Enemy,
+        Gound
     }
 
     public enum ConditionValue

@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    [SerializeField]
-    private EnemyDataListSO enemyDataListSO;
-
     private int[] enemyIndexList;
     private EnemyData[] enemyDataList;
     private BattleEnemy[] battleEnemiesList;
@@ -23,7 +20,7 @@ public class EnemyController : MonoBehaviour
         for (int i = 0; i < enemyIndexList.Length; i++)
         {
             //Read Data from enemyDataListSO
-            EnemyData enemyData = enemyDataListSO.enemyDataList[enemyIndexList[i]];
+            EnemyData enemyData = new EnemyData();
             enemyPrefabs[i] = enemyData.prefab;
             enemyDataList[i] = enemyData;
         }
