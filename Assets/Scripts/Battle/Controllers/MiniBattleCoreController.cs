@@ -16,6 +16,7 @@ public class MiniBattleCoreController : MonoBehaviour
         PauseGame
     }
 
+    public UIBattleCharacterPanel uiCharacterPanel;
     public BattleCardController cardController;
     public BattlePlayerController playerController;
     public EnemyController enemyController;
@@ -44,10 +45,11 @@ public class MiniBattleCoreController : MonoBehaviour
     {
     }
 
-    public void Init(Action callback, List<CardData> cardDb)
+    public void Init(Action callback, List<CardData> cardDb )
     {
         finishBattleCallback = callback;
         cardController.Init(this, cardDb);
+        uiCharacterPanel.Init();
     }
 
     public void StartBattle()

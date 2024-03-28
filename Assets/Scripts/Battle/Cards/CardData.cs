@@ -10,6 +10,7 @@ public class CardData
     public string Occupation;
     public string Name;
     public CardType Type;
+    public int Level;
     public int Cost;
     public bool isExhaust;
     public string Effect;

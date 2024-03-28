@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 
 public class UIBattleCardsPanel : MonoBehaviour
@@ -12,8 +13,14 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     [SerializeField]
     private GameObject showCardsContent;
-   
     public RectTransform cardDragAreaRectTrans;
+
+    [SerializeField]
+    private TMP_Text stackCountTxt;
+    [SerializeField]
+    private TMP_Text usedCountTxt;
+    [SerializeField]
+    private TMP_Text discardCountTxt;
 
     [SerializeField]
     private List<UIBattleCard> cardList;
@@ -46,6 +53,11 @@ public class UIBattleCardsPanel : MonoBehaviour
         {
             DrawCard();
         }
+
+        //Update count UI - TODO: Move out of Update method
+        stackCountTxt.text = "Stack: " +  cardStackList.Count.ToString();
+        usedCountTxt.text ="Used: " +  usedCardList.Count.ToString();
+        discardCountTxt.text = "Discard: " + discardCardList.Count.ToString();
     }
 
     public void Init(BattleCardController _cardController, List<CardData> cardDatas)

@@ -1,8 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using static CardData;
 
+[Serializable]
 public class Card
 {
     public CardData data { get; private set; }
