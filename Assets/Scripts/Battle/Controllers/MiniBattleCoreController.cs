@@ -151,25 +151,18 @@ public class MiniBattleCoreController : MonoBehaviour
         if (!playerController.UseMP(card.data.Cost))
             return false;
 
-        //for (int i = 0; i < card.data.effectList.Count; i++)
-        //{
-        //    //process effect
-        //    var effect = card.data.effectList[i];
-        //    if (card.data.Type == CardType.Attack)
-        //    {
-        //        if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
-        //            enemyController.GetTargetEnemy().BeAttacked(int.Parse(effect.effectValueStr));
-        //        else if (effect.effectTarget == CardEffect.EffectTarget.Player)
-        //            playerController.GetBattlePlayer().BeAttacked(int.Parse(effect.effectValueStr));
-        //    }
-        //    else if (card.data.Type == CardType.Defend)
-        //    {
-        //        if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
-        //            enemyController.GetTargetEnemy().BeDefenced(int.Parse(effect.effectValueStr));
-        //        else if (effect.effectTarget == CardEffect.EffectTarget.Player)
-        //            playerController.GetBattlePlayer().BeDefenced(int.Parse(effect.effectValueStr));
-        //    }
-        //}
+        for (int i = 0; i < card.effectList.Count; i++)
+        {
+            //process effect
+            var effect = card.effectList[i];
+            if (card.data.Type == CardType.Attack)
+            {
+                if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
+                    enemyController.GetTargetEnemy().BeAttacked(effect.effectValue);
+                else if (effect.effectTarget == CardEffect.EffectTarget.Self)
+                    enemyController.GetTargetEnemy().BeAttacked(effect.effectValue);
+            }
+        }
 
         return true;
     }

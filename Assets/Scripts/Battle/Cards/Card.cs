@@ -6,35 +6,41 @@ using static CardData;
 public class Card
 {
     public CardData data { get; private set; }
+    public List<CardEffect> effectList { get; private set; }
 
 
     public Card(CardData _data)
     {
-        data = _data;
-        effects = new List<CardEffect>();
-
-        CardEffect effect = new CardEffect(_data.Target, _data.Effect, _data.Value, _data.Distance, _data.Direction, _data.Success, _data.IsAreaEffect);
-        effects.Add(effect);
-
-        if(_data.Target2 != null)
+        try
         {
-            CardEffect effect2 = new CardEffect(_data.Target2, _data.Effect2, _data.Value2, _data.Distance2, _data.Direction2, _data.Success2, _data.IsAreaEffect2);
-            effects.Add(effect2);
+            data = _data;
+            effectList = new List<CardEffect>();
+
+            CardEffect effect = new CardEffect(_data.Target, _data.Effect, _data.Value, _data.Distance, _data.Direction, _data.Success, _data.IsAreaEffect);
+            effectList.Add(effect);
+
+            if (_data.Target2 != string.Empty)
+            {
+                CardEffect effect2 = new CardEffect(_data.Target2, _data.Effect2, _data.Value2.Value, _data.Distance2.Value, _data.Direction2, _data.Success2.Value, _data.IsAreaEffect2.Value);
+                effectList.Add(effect2);
+            }
         }
+        catch(System.Exception ex)
+        {
+            Debug.LogException(ex);
+        }
+
     }
-
-    public List<CardEffect> effects { get; private set; }
-
 
     public string GetCardTypeName()
     {
         if (data.Type == CardType.Attack )
             return "Attack";
-        else if (data.Type == CardType.Defend)
+        else if (data.Type == CardType.Defense)
             return "Defense";
-        else if (data.Type == CardType.MovePosition || data.Type == CardType.MoveShip)
+        else if (data.Type == CardType.Move)
             return "Movement";
-        else if (data.Type == CardType.Other)
+        else if (data.Type == CardType.Special)
             return "Special";
         else
             return "Common";
@@ -55,16 +61,16 @@ public class Card
         //    }
         //}
 
-        //if (data.effectList.Count == 0)
-        //    detailStr += "No Effect\n";
-        //else
-        //{
-        //    for (int i = 0; i < data.effectList.Count; i++)
-        //    {
-        //        var effect = data.effectList[i];
-        //        detailStr += "Effect: \n Target: " + effect.effectTarget + effect.effectProperty + effect.effectValueStr+ "\n";
-        //    }
-        //}
+        if (effectList.Count == 0)
+            detailStr += "No Effect\n";
+        else
+        {
+            for (int i = 0; i < effectList.Count; i++)
+            {
+                var effect = effectList[i];
+                detailStr += "Effect: \n Target: " + effect.effectTarget + effect.effectProperty + effect.effectValue + "\n";
+            }
+        }
 
         return detailStr;
     }

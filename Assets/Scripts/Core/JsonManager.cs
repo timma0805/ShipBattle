@@ -1,7 +1,10 @@
+using Newtonsoft.Json;
+using Palmmedia.ReportGenerator.Core.Common;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class JsonManager : MonoBehaviour
@@ -18,15 +21,22 @@ public class JsonManager : MonoBehaviour
         
     }
     
-    public async Task Int()
+    public async Task Init()
     {
         await ParseCardJson();
     }
 
     private async Task ParseCardJson()
     {
-        string json = Resources.Load("JSON/CardJson").ToString();
-        cardDB = JsonUtility.FromJson<CardsDB>("{\"cards\":" + json + "}");
+        try
+        {
+            string json = Resources.Load("JSON/CardJson").ToString();
+            cardDB = JsonConvert.DeserializeObject<CardsDB>("{\"cards\":" + json + "}");
+        }
+        catch(Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     [Serializable]

@@ -40,8 +40,8 @@
    "Value2": -3,
    "Direction2": "Front",
    "Distance2": 1,
-   "IsAreaEffect2": null,
-   "Success2": null
+   "IsAreaEffect2": false,
+   "Success2": 100
  },
  {
    "ID": 3,
@@ -214,7 +214,7 @@
    "Effect2": "Unmovement",
    "Target2": "Self",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -390,7 +390,7 @@
    "Effect2": "Dogde",
    "Target2": "Self",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 50
@@ -412,7 +412,7 @@
    "Effect2": "Blind",
    "Target2": "Enemy",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -566,7 +566,7 @@
    "Effect2": "MP",
    "Target2": "Self",
    "Value2": 2,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -896,7 +896,7 @@
    "Effect2": "Stun",
    "Target2": "Enemy",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 50
@@ -918,7 +918,7 @@
    "Effect2": "HP",
    "Target2": "Enemy",
    "Value2": 3,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -984,7 +984,7 @@
    "Effect2": "HP",
    "Target2": "Self",
    "Value2": -2,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -1050,7 +1050,7 @@
    "Effect2": "Stun",
    "Target2": "Enemy",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -1072,7 +1072,7 @@
    "Effect2": "Unmovement",
    "Target2": "Enemy",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 50
@@ -1094,7 +1094,7 @@
    "Effect2": "Stun",
    "Target2": "Enemy",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -1204,7 +1204,7 @@
    "Effect2": "Untargetable",
    "Target2": "Self",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -1226,7 +1226,7 @@
    "Effect2": "Fire",
    "Target2": "Enemy",
    "Value2": 2,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -1358,7 +1358,7 @@
    "Effect2": "Stun",
    "Target2": "Enemy",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 50
@@ -1402,7 +1402,7 @@
    "Effect2": "Weakness",
    "Target2": "Enemy",
    "Value2": 2,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -1666,7 +1666,7 @@
    "Effect2": "HP",
    "Target2": "Enemy",
    "Value2": -1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": 1,
    "IsAreaEffect2": false,
    "Success2": 100
@@ -1864,7 +1864,7 @@
    "Effect2": "Posion",
    "Target2": "Enemy",
    "Value2": 1,
-   "Direction2": "Any",
+   "Direction2": "All",
    "Distance2": -1,
    "IsAreaEffect2": false,
    "Success2": 100

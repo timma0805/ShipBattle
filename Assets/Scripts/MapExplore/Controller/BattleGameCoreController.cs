@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -60,6 +61,7 @@ public class BattleGameCoreController : MonoBehaviour
     {
         InitPanels();
         LoadBattleStage(BattleStage.InitRun);
+
     }
 
     // Update is called once per frame
@@ -73,7 +75,7 @@ public class BattleGameCoreController : MonoBehaviour
     private async Task InitPanels()
     {
         //Read Data from Json
-        await jsonManager.Int();
+        await jsonManager.Init();
 
         mapController = Instantiate(oceanMapPrefab).GetComponent<MapController>();
         mapController.GetComponent<Canvas>().worldCamera = uiCamera;

@@ -75,11 +75,10 @@ using UnityEngine;
     {
         None,
         Attack,
-        Defend,
+        Defense,
         Heal,
-        MovePosition,
-        MoveShip,
-        Other
+        Move,
+        Special
     }
 
     public enum EnemyAttackTarget
