@@ -6,24 +6,15 @@ using System;
 [Serializable]
 public class EnemyData
 {
+    public int ID;
     public string Name;
+    public CharacterType Type;
     public int HP;
-    public int MP;
     public float Speed;
-    public int width;
-    public int length;
-    public float weight;
-    public GameObject prefab;
-    public List<EnemyPartData> subParts;
+    public string SkillSetStr;
+    public string Description;
 
     public EnemyData()
     {
-        Name = "Enemy";
-        HP = 100;
-        MP = 0;
-        width = 2;
-        length = 2;
-        Speed = 1;
-        weight = 20;
     }
 }

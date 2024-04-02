@@ -1,0 +1,101 @@
+[
+ {
+   "ID": 1,
+   "Name": "Shrimp",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 10,
+   "Speed": 1,
+   "Attack": 2
+ },
+ {
+   "ID": 2,
+   "Name": "Star",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 15,
+   "Speed": 1,
+   "Attack": 1
+ },
+ {
+   "ID": 3,
+   "Name": "Crab",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 20,
+   "Speed": 1,
+   "Attack": 1
+ },
+ {
+   "ID": 4,
+   "Name": "Worm",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 10,
+   "Speed": 1,
+   "Attack": 2
+ },
+ {
+   "ID": 5,
+   "Name": "Snake",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 10,
+   "Speed": 1,
+   "Attack": 2
+ },
+ {
+   "ID": 6,
+   "Name": "Pirate",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 5,
+   "Speed": 1,
+   "Attack": 3
+ },
+ {
+   "ID": 7,
+   "Name": "Water Ghost",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 1,
+   "Speed": 3,
+   "Attack": 2
+ },
+ {
+   "ID": 8,
+   "Name": "Fish Man",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 5,
+   "Speed": 1,
+   "Attack": 2
+ },
+ {
+   "ID": 9,
+   "Name": "Water Element",
+   "Type": "Enemy",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 5,
+   "Speed": 2,
+   "Attack": 3
+ },
+ {
+   "ID": 10,
+   "Name": "Big Octopus",
+   "Type": "MiniBoss",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 30,
+   "Speed": 1,
+   "Attack": 4
+ },
+ {
+   "ID": 11,
+   "Name": "IslandTurtle",
+   "Type": "FinalBoss",
+   "SkillSetStr": "1,2,3,4,5",
+   "HP": 60,
+   "Speed": 1,
+   "Attack": 6
+ }
+]

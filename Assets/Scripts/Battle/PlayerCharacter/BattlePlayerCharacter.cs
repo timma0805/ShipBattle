@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BattlePlayer : MonoBehaviour, ITargetObject
+public class BattlePlayerCharacter : MonoBehaviour, ITargetObject
 {
-    public BattlePlayerData playerData { get; private set; }
+    public BattlePlayerCharacterData playerData { get; private set; }
     public List<CharacterStatus> playerStatusList { get; private set; }
     public CharacterState playerState { get; private set; }
     public FaceDirection currentDirection { get; private set; }
@@ -12,7 +12,6 @@ public class BattlePlayer : MonoBehaviour, ITargetObject
 
     private bool CanCancel;
     private int specialCountdown;
-    private List<BattleMapTile> currentTiles;
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +25,7 @@ public class BattlePlayer : MonoBehaviour, ITargetObject
         
     }
 
-    public void Init(BattlePlayerData _playerData)
+    public void Init(BattlePlayerCharacterData _playerData)
     {
         playerData = _playerData;
 
@@ -41,8 +40,8 @@ public class BattlePlayer : MonoBehaviour, ITargetObject
     public void BeAttacked(int value)
     {
         Debug.Log("BattlePlayer BeAttacked" + value);
-        playerData.CurShipBodyHP += value;
-        Debug.Log("playerData.HP" + playerData.CurShipBodyHP);
+        playerData.CurHP += value;
+        Debug.Log("playerData.HP" + playerData.CurHP);
     }
 
     public void BeMoved(Vector2 pos, FaceDirection rotation)
@@ -61,13 +60,13 @@ public class BattlePlayer : MonoBehaviour, ITargetObject
     public void BeDefenced(int value)
     {
         Debug.Log("BattlePlayer BeDefenced" + value);
-        playerData.CurShipBodyHP += value;
-        Debug.Log("playerData.HP" + playerData.CurShipBodyHP);
+        playerData.CurHP += value;
+        Debug.Log("playerData.HP" + playerData.CurHP);
     }
 
     public void StartTurn()
     {
-        Debug.Log($"StartTurn: HP {playerData.CurShipBodyHP}");
+        Debug.Log($"StartTurn: HP {playerData.CurHP}");
 
         //recovery
         //Gain HP and MP when Start

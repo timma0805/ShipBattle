@@ -8,7 +8,7 @@ public class BattleCardController : MonoBehaviour
     private UIBattleCardsPanel uIBattleCardsPanel;
 
     private BattleEnemy[] enemyDatas;
-    private BattlePlayer playerData;
+    private BattlePlayerCharacter playerData;
     private MiniBattleCoreController battleController;
     // Start is called before the first frame update
     void Start()
@@ -32,7 +32,7 @@ public class BattleCardController : MonoBehaviour
         uIBattleCardsPanel.DrawCard();
     }
 
-    public void UpdateCharacterData(BattlePlayer player, BattleEnemy[] battleEnemies)
+    public void UpdateCharacterData(BattlePlayerCharacter player, BattleEnemy[] battleEnemies)
     {
         playerData = player;
         enemyDatas = battleEnemies;

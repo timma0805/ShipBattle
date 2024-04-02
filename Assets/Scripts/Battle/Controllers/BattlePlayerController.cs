@@ -5,8 +5,7 @@ using UnityEngine;
 
 public class BattlePlayerController : MonoBehaviour
 {
-    private BattlePlayerData battlePlayerData;
-    private BattlePlayer battlePlayer;
+    private BattlePlayerData playerData;
     private MiniBattleCoreController battleController;
 
     // Start is called before the first frame update
@@ -21,25 +20,11 @@ public class BattlePlayerController : MonoBehaviour
         
     }
 
-    public async Task Init(MiniBattleCoreController controller, GameObject playerObj)
+    public async Task Init(MiniBattleCoreController controller, BattlePlayerData _playerData)
     {
         battleController = controller;
 
-        if (playerObj.GetComponent<BattlePlayer>() == null)
-            battlePlayer = playerObj.AddComponent<BattlePlayer>();
-        else
-            battlePlayer = playerObj.GetComponent<BattlePlayer>();
-
-        battlePlayer.Init(battlePlayerData);
-    }
-    public BattlePlayerData GetBattlePlayerData()
-    {
-        return battlePlayerData;
-    }
-
-    public BattlePlayer GetBattlePlayer()
-    {
-        return battlePlayer;
+        playerData = _playerData;
     }
 
     public GameObject GetPlayerPrefab()

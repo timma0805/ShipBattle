@@ -38,6 +38,7 @@ public class BattleGameCoreController : MonoBehaviour
 
     //Current Data
     private BattleStage curBattleStage;
+    private EntireMapData currentEntireMapData;
     private MapData currentMapData;
 
     #region Unity Activities
@@ -61,7 +62,6 @@ public class BattleGameCoreController : MonoBehaviour
     {
         InitPanels();
         LoadBattleStage(BattleStage.InitRun);
-
     }
 
     // Update is called once per frame
@@ -77,9 +77,13 @@ public class BattleGameCoreController : MonoBehaviour
         //Read Data from Json
         await jsonManager.Init();
 
+        //Load Player Data
+        playerController.Init(jsonManager.characterDB);
+
         mapController = Instantiate(oceanMapPrefab).GetComponent<MapController>();
         mapController.GetComponent<Canvas>().worldCamera = uiCamera;
         mapController.gameObject.SetActive(false);
+        mapController.Init(jsonManager.mapDB);
 
         villageController = Instantiate(villagePanelPrefab).GetComponent<VillageController>();
         villageController.GetComponent<Canvas>().worldCamera = uiCamera;
@@ -100,6 +104,7 @@ public class BattleGameCoreController : MonoBehaviour
         miniBattleController.Init(() => {
             LoadBattleStage(BattleStage.EndEvent);
         },
+        playerController.GetBattlePlayerData(),
         jsonManager.cardDB.cards);
         miniBattleController.gameObject.SetActive(false);
     }
@@ -111,11 +116,11 @@ public class BattleGameCoreController : MonoBehaviour
 
     private void ShowPlayerStats()
     {
-        BattlePlayerData playerData = playerController.GetBattlePlayerData();
-        string str = "";
-        str += "Food: " + playerData.CurFoodAmount;
-        str += " | EG HP: " + playerData.CurEnergyHP;
-        str += " | Ship HP: " + playerData.CurShipBodyHP;
+        //BattlePlayerData playerData = playerController.GetBattlePlayerData();
+        //string str = "";
+        //str += "Food: " + playerData.CurFoodAmount;
+        //str += " | EG HP: " + playerData.CurEnergyHP;
+        //str += " | Ship HP: " + playerData.CurShipBodyHP;
     }
 
     private void LoadBattleStage(BattleStage nextStage)
@@ -129,7 +134,7 @@ public class BattleGameCoreController : MonoBehaviour
         switch (curBattleStage)
         {
             case BattleStage.InitRun:
-                InitRun();
+                InitRun(0);
                 break;
             case BattleStage.StartRun:
                 StartRun();
@@ -161,10 +166,10 @@ public class BattleGameCoreController : MonoBehaviour
         }
     }
 
-    private void InitRun()
+    private void InitRun(int mapIndex)
     {
         //Load Event Map
-        mapController.SetupMapEvents();
+        currentEntireMapData = mapController.SetupMapEvents(mapIndex);
         LoadBattleStage(BattleStage.StartRun);
     }
 
@@ -230,7 +235,7 @@ public class BattleGameCoreController : MonoBehaviour
 
     private async Task StartEnemyBattle()
     {
-        miniBattleController.StartBattle();
+        miniBattleController.StartBattle(currentEntireMapData);
     }
     private async Task EndEnemyBattle()
     {

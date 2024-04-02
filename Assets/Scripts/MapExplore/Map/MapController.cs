@@ -13,6 +13,8 @@ public class MapController : MonoBehaviour
     [SerializeField]
     private Dictionary<int, List<MapData>> mapList;
 
+    private List<EntireMapData> entireMapDataList;
+    private EntireMapData currentEntireMapData;
     private MapData currentMapData;
 
     private void Awake()
@@ -21,7 +23,6 @@ public class MapController : MonoBehaviour
     }
     void Start()
     {
-        mapExploreUI.Init(this);
     }
 
     // Update is called once per frame
@@ -30,8 +31,16 @@ public class MapController : MonoBehaviour
         
     }
 
-    public void SetupMapEvents()
+    public void Init(JsonManager.MapDB mapList)
     {
+        entireMapDataList = mapList.maps;
+        mapExploreUI.Init(this);
+    }
+
+    public EntireMapData SetupMapEvents(int entireMapIndex)
+    {
+        currentEntireMapData = entireMapDataList[entireMapIndex];
+
         /** Rule to generate
          * 1. 3 lines need to generate
          * 2. Have one middle boss and one final boss shared with three lines
@@ -39,11 +48,11 @@ public class MapController : MonoBehaviour
          * 4. Each small part must have at least 1 Village, 2 special event and 2 enemy battle
          * 
          */
-        const int smallMapDepth = 8;
-        const int mapDepth = 1+ smallMapDepth * 2+1+ smallMapDepth * 2+ 1;
-        const int mapWidth = 3;
-        const float doConnectionBtwLinePer = 0.5f;
-        const float doConnectionWithTwoLine = 0.75f;
+        int smallMapDepth = currentEntireMapData.SmallMapDepth;
+        int mapDepth = 1+ (currentEntireMapData.SmallMapDepth +1)* currentEntireMapData.SmallMapCount; // Start point + small map with boss
+        int mapWidth = currentEntireMapData.MapWidth;
+        float doConnectionBtwLinePer = currentEntireMapData.ConnectionBtwLinePer;
+        float doConnectionWithTwoLine = currentEntireMapData.ConnectionWithTwoLine;
 
         mapList = new Dictionary<int, List<MapData>>(); // Key: line index
         int mapID = 0;
@@ -55,7 +64,6 @@ public class MapController : MonoBehaviour
 
             var (villiageCount, specialEventCount, enemyCounts) = GetMapSmallPartCounts(smallMapDepth);
 
-            int smallPartIndex = 0;
             MapData previousMapData = null;
             List<SpecialEventType> specialEvents = GetRandomSpecialEventList();
 
@@ -76,15 +84,14 @@ public class MapController : MonoBehaviour
                 {
                     (villiageCount, specialEventCount, enemyCounts) = GetMapSmallPartCounts(smallMapDepth);
 
-                    if (smallPartIndex == 1)// middle point, MiniBoss
+                    if (depth < mapDepth-1)// middle point, MiniBoss
                     {
                         mapData.eventType = MapEventType.MiniBoss;
                     }
-                    else if (smallPartIndex == 3)//Final Boss
+                    else//Final Boss
                     {
                         mapData.eventType = MapEventType.FinalBoss;
                     }
-                    smallPartIndex++;
                 }
 
                 if (mapData.eventType == MapEventType.NA) // Normal Gen
@@ -174,13 +181,15 @@ public class MapController : MonoBehaviour
                 }
             }
         }
+
+        return currentEntireMapData;
     }
 
     private (int, int , int) GetMapSmallPartCounts(int smallMapDepth)
     {
         //random small part
-        int villageCount = 1;
-        int specialEventCount = Random.Range(2, 3);
+        int villageCount = currentEntireMapData.VillageCount;
+        int specialEventCount = currentEntireMapData.SpecialEventCount;
         int enemyCount = smallMapDepth - villageCount - specialEventCount;
 
         return (villageCount, specialEventCount, enemyCount);
@@ -215,14 +224,8 @@ public class MapController : MonoBehaviour
 
     private List<SpecialEventType> GetRandomSpecialEventList()
     {
-        List<SpecialEventType> npcList = new List<SpecialEventType>();
-        for(int i = 1; i < (int)SpecialEventType.Monster; i++)
-        {
-            npcList.Add((SpecialEventType)i);
-        }
-
-        List<SpecialEventType> shufflednpcList = npcList.OrderBy(_ => System.Guid.NewGuid()).ToList();
-        return shufflednpcList;
+        List<SpecialEventType> shuffledEventList = currentEntireMapData.SpecialEventTypeList.OrderBy(_ => System.Guid.NewGuid()).ToList();
+        return shuffledEventList;
     }
 
     public Dictionary<int, List<MapData>> GetMapList()

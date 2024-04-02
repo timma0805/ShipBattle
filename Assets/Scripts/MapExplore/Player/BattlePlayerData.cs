@@ -2,27 +2,21 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BattlePlayerData
+/**
+ * The class is player data for Each run
+ */
+public class BattlePlayerData 
 {
-    public int CurEnergyHP;
-    public int MaxEnergyHP;
-    public int CurShipBodyHP;
-    public int MaxShipBodyHP;
-    public int MaxMemberCount;
-    public int MoveSpeed;
-    public int CurFoodAmount;
-    public int MaxFoodAmount;
+    public int money;
+    public int score;
+    public int foodSupply;
 
+    public List<BattlePlayerCharacterData> battlePlayerCharacterDatas;
 
-    public BattlePlayerData()
+    public BattlePlayerData ()
     {
-        CurEnergyHP = 100;
-        MaxEnergyHP = 100;
-        CurShipBodyHP = 100;
-        MaxShipBodyHP = 100;
-        MaxMemberCount = 3;
-        MoveSpeed = 10;
-        CurFoodAmount = 100;
-        MaxFoodAmount = 100;
+        money = 0;
+        score = 0;
+        foodSupply = 100;
     }
 }

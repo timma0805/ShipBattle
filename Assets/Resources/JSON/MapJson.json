@@ -1,0 +1,16 @@
+[
+ {
+   "ID": 1,
+   "Name": "Ocean",
+   "Description": "Tut Map",
+   "SmallMapDepth": 8,
+   "SmallMapCount": 2,
+   "MapWidth": 3,
+   "ConnectionBtwLinePer": 0.5,
+   "ConnectionWithTwoLine": 0.75,
+   "EnemySetStr": "1,2,3,4,5",
+   "SpecialEventSetStr": "1,2,3,4,5,6,7,8,9,10",
+   "VillageCount": 1,
+   "SpecialEventCount": 3
+ }
+]

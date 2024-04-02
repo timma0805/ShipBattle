@@ -24,6 +24,7 @@ public class MiniBattleCoreController : MonoBehaviour
     private BattleStage previousStage;
     private BattleStage currentStage;
     private bool isPause = false;
+    private EntireMapData entireMapData;
 
     private Action finishBattleCallback;
 
@@ -45,15 +46,17 @@ public class MiniBattleCoreController : MonoBehaviour
     {
     }
 
-    public void Init(Action callback, List<CardData> cardDb )
+    public void Init(Action callback, BattlePlayerData battlePlayerData, List<CardData> cardList )
     {
         finishBattleCallback = callback;
-        cardController.Init(this, cardDb);
+        playerController.Init(this, battlePlayerData);
+        cardController.Init(this, cardList);
         uiCharacterPanel.Init();
     }
 
-    public void StartBattle()
+    public void StartBattle(EntireMapData _entireMapData)
     {
+        entireMapData = _entireMapData;
         RunStage(BattleStage.Init);
     }
 
@@ -91,6 +94,10 @@ public class MiniBattleCoreController : MonoBehaviour
     private async Task InitBattle()
     {
         Debug.Log("InitBattle");     
+
+        //Init charcter and enemy
+
+
         gameObject.SetActive(true);
         RunStage(BattleStage.StartGame);
     }
@@ -159,10 +166,10 @@ public class MiniBattleCoreController : MonoBehaviour
             var effect = card.effectList[i];
             if (card.data.Type == CardType.Attack)
             {
-                if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
-                    enemyController.GetTargetEnemy().BeAttacked(effect.effectValue);
-                else if (effect.effectTarget == CardEffect.EffectTarget.Self)
-                    enemyController.GetTargetEnemy().BeAttacked(effect.effectValue);
+                //if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
+                //    enemyController.GetTargetEnemy().BeAttacked(effect.effectValue);
+                //else if (effect.effectTarget == CardEffect.EffectTarget.Self)
+                //    enemyController.GetTargetEnemy().BeAttacked(effect.effectValue);
             }
         }
 

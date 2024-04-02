@@ -21,7 +21,6 @@ public class EnemyController : MonoBehaviour
         {
             //Read Data from enemyDataListSO
             EnemyData enemyData = new EnemyData();
-            enemyPrefabs[i] = enemyData.prefab;
             enemyDataList[i] = enemyData;
         }
 
@@ -64,22 +63,24 @@ public class EnemyController : MonoBehaviour
 
     public int[] GetTargetEnemiesWidth()
     {
-        int[] widthArr = new int[enemyIndexList.Length];
-        for(int i = 0; i < enemyDataList.Length; i++)
-        {
-            widthArr[i] = enemyDataList[i].width;
-        }
-        return widthArr;
+        //int[] widthArr = new int[enemyIndexList.Length];
+        //for(int i = 0; i < enemyDataList.Length; i++)
+        //{
+        //    widthArr[i] = enemyDataList[i].width;
+        //}
+        //return widthArr;
+        return null;
     }
 
     public int[] GetTargetEnemiesLength()
     {
-        int[] lengthArr = new int[enemyIndexList.Length];
-        for (int i = 0; i < enemyDataList.Length; i++)
-        {
-            lengthArr[i] = enemyDataList[i].length;
-        }
-        return lengthArr;
+        //int[] lengthArr = new int[enemyIndexList.Length];
+        //for (int i = 0; i < enemyDataList.Length; i++)
+        //{
+        //    lengthArr[i] = enemyDataList[i].length;
+        //}
+        //return lengthArr;
+        return null;
     }
 
     public bool CheckIsAllEnemyDead()
