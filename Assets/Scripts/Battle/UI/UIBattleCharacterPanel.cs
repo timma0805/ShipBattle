@@ -16,6 +16,14 @@ public class UIBattleCharacterPanel : MonoBehaviour
     [SerializeField]
     private Button specialSkillBtn;
 
+    [SerializeField]
+    private GameObject[] characterPrefabList;
+    [SerializeField]
+    private GameObject[] enemyPrefabList;
+
+    private List<GameObject> characterObjList;
+    private List<GameObject> enemyObjList;
+
     private List<UIBattleCharacterSlot> characterSlotsList;
 
     //Setting
@@ -49,6 +57,29 @@ public class UIBattleCharacterPanel : MonoBehaviour
         }
 
         Debug.Log("characterSlotsList Count:" + characterSlotsList.Count);
+    }
+
+    public void StartBattle(List<BattlePlayerCharacter> battlePlayerCharacters, List<BattleEnemy> battleEnemies)
+    {
+        const float scaleSize = 100.0f;
+        characterObjList = new List<GameObject>();
+        enemyObjList = new List<GameObject>();
+
+        for (int i = 0;i < battlePlayerCharacters.Count;i++)
+        {
+            GameObject newCharacter = Instantiate(characterPrefabList[battlePlayerCharacters[i].characterData.ID], characterSlotsList[i].transform);
+            newCharacter.transform.localScale = new Vector3(-newCharacter.transform.localScale.x* scaleSize, newCharacter.transform.localScale.y* scaleSize, newCharacter.transform.localScale.z);
+            newCharacter.transform.localPosition = new Vector3(newCharacter.transform.localPosition.x, newCharacter.transform.localPosition.y - 100.0f, newCharacter.transform.localPosition.z);
+            characterObjList.Add(newCharacter);
+        }
+
+        for (int i = 0; i < battleEnemies.Count; i++)
+        {
+            GameObject newCharacter = Instantiate(enemyPrefabList[battleEnemies[i].enemyData.ID], characterSlotsList[characterSlotsList.Count - 1 - i].transform);
+            newCharacter.transform.localScale = new Vector3(newCharacter.transform.localScale.x * scaleSize, newCharacter.transform.localScale.y * scaleSize, newCharacter.transform.localScale.z);
+            newCharacter.transform.localPosition = new Vector3(newCharacter.transform.localPosition.x, newCharacter.transform.localPosition.y - 50.0f, newCharacter.transform.localPosition.z);
+            enemyObjList.Add(newCharacter);
+        }
     }
 
     private void SelectSlot(int slotid)

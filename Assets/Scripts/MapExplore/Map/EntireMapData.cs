@@ -18,6 +18,6 @@ public class EntireMapData
     public int SpecialEventCount;
 
     public List<SpecialEventType> SpecialEventTypeList;
-
+    public List<EnemyData> EnemyDataList;
     public EntireMapData() { }
 }

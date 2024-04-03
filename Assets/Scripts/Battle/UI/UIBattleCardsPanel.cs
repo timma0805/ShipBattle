@@ -60,9 +60,13 @@ public class UIBattleCardsPanel : MonoBehaviour
         discardCountTxt.text = "Discard: " + discardCardList.Count.ToString();
     }
 
-    public void Init(BattleCardController _cardController, List<CardData> cardDatas)
+    public void Init(BattleCardController _cardController)
     {
-        cardController = _cardController;
+        cardController = _cardController;   
+    }
+
+    public void StartBattle(List<CardData> cardDatas)
+    {
         List<Card> cards = GenerateCards(cardDatas);
         InitialCardStack(cards);
     }
@@ -86,7 +90,15 @@ public class UIBattleCardsPanel : MonoBehaviour
         cards = ShuffleGOList(cards);
 
         cardStackList = cards;
-        cardList = new List<UIBattleCard>();
+        if(cardList == null)
+            cardList = new List<UIBattleCard>();
+        else
+        {
+            for (int i = 0;i < cardList.Count;i++)
+            {
+                cardList[i].Unvisible();
+            }
+        }
         usedCardList = new List<Card>();
         discardCardList = new List<Card>();
         currentCardList = new List<Card>();  

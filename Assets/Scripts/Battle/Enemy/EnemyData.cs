@@ -13,7 +13,8 @@ public class EnemyData
     public float Speed;
     public string SkillSetStr;
     public string Description;
-
+    
+    public List<EnemySkillData> SkillList;
     public EnemyData()
     {
     }

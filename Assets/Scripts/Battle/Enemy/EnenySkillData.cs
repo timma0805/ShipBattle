@@ -15,8 +15,8 @@ public class EnemySkillData
     public FaceDirection Direction;
     public int Distance;
     public bool IsAreaEffect;
-    public EffectTarget ConditionTarget;
-    public CardEffectType ConditionProperty;
-    public ConditionCompare ConditionCompare;
-    public float ConditionValue;
+    public EffectTarget? ConditionTarget;
+    public CardEffectType? ConditionProperty;
+    public ConditionCompare? ConditionCompare;
+    public float? ConditionValue;
 }

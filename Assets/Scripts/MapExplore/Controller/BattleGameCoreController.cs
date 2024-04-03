@@ -103,9 +103,7 @@ public class BattleGameCoreController : MonoBehaviour
         miniBattleController.GetComponent<Canvas>().worldCamera = uiCamera;
         miniBattleController.Init(() => {
             LoadBattleStage(BattleStage.EndEvent);
-        },
-        playerController.GetBattlePlayerData(),
-        jsonManager.cardDB.cards);
+        });
         miniBattleController.gameObject.SetActive(false);
     }
 
@@ -235,7 +233,7 @@ public class BattleGameCoreController : MonoBehaviour
 
     private async Task StartEnemyBattle()
     {
-        miniBattleController.StartBattle(currentEntireMapData);
+        miniBattleController.StartBattle(playerController.GetBattlePlayerData(), currentEntireMapData);
     }
     private async Task EndEnemyBattle()
     {

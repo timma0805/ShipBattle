@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 [Serializable] // Add this attribute to make the class serializable
 
@@ -15,7 +16,7 @@ public class BattlePlayerCharacterData
     public string EquipmentSetStr;
 
     public int CurHP;
-
+    public List<CardData> CardDataList;
 
     public BattlePlayerCharacterData()
     {

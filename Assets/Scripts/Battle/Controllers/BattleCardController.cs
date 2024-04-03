@@ -21,10 +21,15 @@ public class BattleCardController : MonoBehaviour
         
     }
 
-    public void Init(MiniBattleCoreController _battleController, List<CardData> cardDb)
+    public void Init(MiniBattleCoreController _battleController)
     {
         battleController = _battleController;
-        uIBattleCardsPanel.Init(this, cardDb);
+        uIBattleCardsPanel.Init(this);
+    }
+
+    public void StartBattle(List<CardData> cardList)
+    {
+        uIBattleCardsPanel.StartBattle(cardList);
     }
 
     public void StartPlayerTurn()

@@ -42,10 +42,12 @@ public class Card
             return "Defense";
         else if (data.Type == CardType.Move)
             return "Movement";
+        else if (data.Type == CardType.Heal)
+            return "Heal";
         else if (data.Type == CardType.Special)
             return "Special";
         else
-            return "Common";
+            return "????";
     }
 
     public string GetCardDetailString()
@@ -70,7 +72,7 @@ public class Card
             for (int i = 0; i < effectList.Count; i++)
             {
                 var effect = effectList[i];
-                detailStr += "Effect: \n Target: " + effect.effectTarget + effect.effectProperty + effect.effectValue + "\n";
+                detailStr += $"Effect: {effect.effectTarget}'s {effect.effectProperty} Take {effect.effectValue} \n";
             }
         }
 

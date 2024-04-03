@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class MiniBattleCoreController : MonoBehaviour
@@ -18,17 +20,22 @@ public class MiniBattleCoreController : MonoBehaviour
 
     public UIBattleCharacterPanel uiCharacterPanel;
     public BattleCardController cardController;
-    public BattlePlayerController playerController;
-    public EnemyController enemyController;
 
     private BattleStage previousStage;
     private BattleStage currentStage;
     private bool isPause = false;
+
+    private BattlePlayerData playerData;
     private EntireMapData entireMapData;
 
     private Action finishBattleCallback;
 
-    //Temp
+    private List<BattlePlayerCharacter> characterList;
+    private List<BattleEnemy> enemyList;
+
+    //Setting
+    private const int MaxMP = 3;
+    private int currentMP;
     public int selectedMapIndex = 0;
 
     private void Awake()
@@ -46,16 +53,16 @@ public class MiniBattleCoreController : MonoBehaviour
     {
     }
 
-    public void Init(Action callback, BattlePlayerData battlePlayerData, List<CardData> cardList )
+    public void Init(Action callback )
     {
         finishBattleCallback = callback;
-        playerController.Init(this, battlePlayerData);
-        cardController.Init(this, cardList);
+        cardController.Init(this);
         uiCharacterPanel.Init();
     }
 
-    public void StartBattle(EntireMapData _entireMapData)
+    public void StartBattle(BattlePlayerData _battlePlayerData, EntireMapData _entireMapData)
     {
+        playerData = _battlePlayerData;
         entireMapData = _entireMapData;
         RunStage(BattleStage.Init);
     }
@@ -93,13 +100,42 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task InitBattle()
     {
-        Debug.Log("InitBattle");     
+        try
+        {
+            Debug.Log("InitBattle");
+            //Init List
+            characterList = new List<BattlePlayerCharacter>();
+            enemyList = new List<BattleEnemy>();
+            List<CardData> cardList = new List<CardData>();
 
-        //Init charcter and enemy
+            //Apply data
+            for (int i = 0; i < playerData.battlePlayerCharacterDatas.Count; i++)
+            {
+                cardList.AddRange(playerData.battlePlayerCharacterDatas[i].CardDataList);
 
+                BattlePlayerCharacter battlePlayerCharacter = transform.AddComponent<BattlePlayerCharacter>();
+                battlePlayerCharacter.Init(playerData.battlePlayerCharacterDatas[i]);
+                characterList.Add(battlePlayerCharacter);
+            }
 
-        gameObject.SetActive(true);
-        RunStage(BattleStage.StartGame);
+            cardController.StartBattle(cardList);
+
+            for (int i = 0; i < entireMapData.EnemyDataList.Count; i++)
+            {
+                BattleEnemy battleEnemy = transform.AddComponent<BattleEnemy>();
+                battleEnemy.Init(entireMapData.EnemyDataList[i]);
+                enemyList.Add(battleEnemy);
+            }
+
+            uiCharacterPanel.StartBattle(characterList, enemyList);
+
+            gameObject.SetActive(true);
+            RunStage(BattleStage.StartGame);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     private async Task StartGame()
@@ -148,6 +184,8 @@ public class MiniBattleCoreController : MonoBehaviour
     private async Task EndGame()
     {
         Debug.Log("EndGame");
+        if(finishBattleCallback != null)
+            finishBattleCallback();
     }
 
     private void PauseGame(bool _isPause)
@@ -155,9 +193,20 @@ public class MiniBattleCoreController : MonoBehaviour
         isPause = _isPause;
     }
 
+    private bool UseMP(int cost)
+    {
+        if (currentMP + cost <= MaxMP)
+        {
+            currentMP -= cost;
+            return true;
+        }
+
+        return false;
+    }
+
     private bool ProcessUsingCard(Card card)
     {
-        if (!playerController.UseMP(card.data.Cost))
+        if (!UseMP(card.data.Cost))
             return false;
 
         for (int i = 0; i < card.effectList.Count; i++)

@@ -22,6 +22,11 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     private TMP_Text typeTxt;
     [SerializeField]
     private TMP_Text detailTxt;
+    [SerializeField]
+    private TMP_Text occupationTxt;
+    [SerializeField]
+    private Sprite[] bgTypeSprite;
+    
 
     private LayoutElement layoutElement;
     private Button button;
@@ -71,11 +76,12 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     {
         cardData = card;
 
-       // bgImg.sprite = card.data.texture;
+        bgImg.sprite = bgTypeSprite[(int)card.data.Type];
         nameTxt.text = card.data.Name;
         costTxt.text = card.data.Cost.ToString();
         typeTxt.text = card.GetCardTypeName();
         detailTxt.text = card.GetCardDetailString();
+        occupationTxt.text = card.data.Occupation;
     }
 
     public async Task ShowCard()

@@ -17,7 +17,6 @@ public class BattleEnemy : MonoBehaviour, ITargetObject
     // Start is called before the first frame update
     void Start()
     {
-        Init();
     }
 
     // Update is called once per frame
@@ -26,9 +25,9 @@ public class BattleEnemy : MonoBehaviour, ITargetObject
         
     }
 
-    public void Init()
+    public void Init(EnemyData _enemyData)
     {
-        enemyData = new EnemyData();
+        enemyData = _enemyData;
         enemyStatusList = new List<CharacterStatus>();
         currentTiles = new List<BattleMapTile>();
         specialCountdown = -1;

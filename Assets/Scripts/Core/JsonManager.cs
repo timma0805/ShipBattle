@@ -12,6 +12,7 @@ public class JsonManager : MonoBehaviour
     public CardsDB cardDB { get; private set; }
     public CharacterDB characterDB { get; private set; }
     public EnemyDB enemyDB { get; private set; }
+    public EnemySkillDB enemySkillDB { get; private set; }
     public MapDB mapDB { get; private set; }
 
     // Start is called before the first frame update
@@ -29,8 +30,8 @@ public class JsonManager : MonoBehaviour
     {
         await ParseCardJson();
         await ParsePlayerCharacterJson();
-        await ParseEnemyJson();
         await ParseEnemySkillJson();
+        await ParseEnemyJson();
         await ParseMapJson();
     }
 
@@ -52,6 +53,32 @@ public class JsonManager : MonoBehaviour
         {
             string json = Resources.Load("JSON/CharacterJson").ToString();
             characterDB = JsonConvert.DeserializeObject<CharacterDB>("{\"characters\":" + json + "}");
+
+            for (int i = 0; i < characterDB.characters.Count; i++)
+            {
+                characterDB.characters[i].CardDataList = new List<CardData>();
+                string[] setStrs = characterDB.characters[i].CardSetStr.Split(',');
+                for (int j = 0; j < setStrs.Length; j++)
+                {
+                    int cardID = int.Parse(setStrs[j]);
+                    CardData cardData = cardDB.cards.Find(x => x.ID == cardID);
+                    if (cardData != null)
+                        characterDB.characters[i].CardDataList.Add(cardData);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
+    private async Task ParseEnemySkillJson()
+    {
+        try
+        {
+            string json = Resources.Load("JSON/EnemySkillJson").ToString();
+            enemySkillDB = JsonConvert.DeserializeObject<EnemySkillDB>("{\"skills\":" + json + "}");
         }
         catch (Exception e)
         {
@@ -65,6 +92,19 @@ public class JsonManager : MonoBehaviour
         {
             string json = Resources.Load("JSON/EnemyJson").ToString();
             enemyDB = JsonConvert.DeserializeObject<EnemyDB>("{\"enemies\":" + json + "}");
+
+            for (int i = 0; i < enemyDB.enemies.Count; i++)
+            {
+                enemyDB.enemies[i].SkillList = new List<EnemySkillData>();
+                string[] setStrs = enemyDB.enemies[i].SkillSetStr.Split(',');
+                for (int j = 0; j < setStrs.Length; j++)
+                {
+                    int skillID = int.Parse(setStrs[j]);
+                    EnemySkillData skillData = enemySkillDB.skills.Find(x => x.ID == skillID);
+                    if (skillData != null)
+                        enemyDB.enemies[i].SkillList.Add(skillData);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -72,18 +112,7 @@ public class JsonManager : MonoBehaviour
         }
     }
 
-    private async Task ParseEnemySkillJson()
-    {
-        try
-        {
-            string json = Resources.Load("JSON/EnemySkillJson").ToString();
-            enemyDB = JsonConvert.DeserializeObject<EnemyDB>("{\"skills\":" + json + "}");
-        }
-        catch (Exception e)
-        {
-            Debug.LogException(e);
-        }
-    }
+
     private async Task ParseMapJson()
     {
         try
@@ -99,6 +128,16 @@ public class JsonManager : MonoBehaviour
                 {
                     int eventTypeInt = int.Parse(setStrs[j]);
                     mapDB.maps[i].SpecialEventTypeList.Add((SpecialEventType)eventTypeInt);
+                }
+
+                mapDB.maps[i].EnemyDataList = new List<EnemyData>();
+                string[] enemySetStrs = mapDB.maps[i].EnemySetStr.Split(',');
+                for (int j = 0; j < enemySetStrs.Length; j++)
+                {
+                    int enemyID = int.Parse(enemySetStrs[j]);
+                    EnemyData enemyData = enemyDB.enemies.Find(x => x.ID == enemyID);
+                    if(enemyData != null)
+                        mapDB.maps[i].EnemyDataList.Add(enemyData);
                 }
             }
         }

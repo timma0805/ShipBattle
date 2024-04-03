@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BattlePlayerCharacter : MonoBehaviour, ITargetObject
 {
-    public BattlePlayerCharacterData playerData { get; private set; }
+    public BattlePlayerCharacterData characterData { get; private set; }
     public List<CharacterStatus> playerStatusList { get; private set; }
     public CharacterState playerState { get; private set; }
     public FaceDirection currentDirection { get; private set; }
@@ -25,9 +25,9 @@ public class BattlePlayerCharacter : MonoBehaviour, ITargetObject
         
     }
 
-    public void Init(BattlePlayerCharacterData _playerData)
+    public void Init(BattlePlayerCharacterData data)
     {
-        playerData = _playerData;
+        characterData = data;
 
         //init
         playerStatusList = new List<CharacterStatus>();
@@ -40,8 +40,8 @@ public class BattlePlayerCharacter : MonoBehaviour, ITargetObject
     public void BeAttacked(int value)
     {
         Debug.Log("BattlePlayer BeAttacked" + value);
-        playerData.CurHP += value;
-        Debug.Log("playerData.HP" + playerData.CurHP);
+        characterData.CurHP += value;
+        Debug.Log("playerData.HP" + characterData.CurHP);
     }
 
     public void BeMoved(Vector2 pos, FaceDirection rotation)
@@ -60,13 +60,13 @@ public class BattlePlayerCharacter : MonoBehaviour, ITargetObject
     public void BeDefenced(int value)
     {
         Debug.Log("BattlePlayer BeDefenced" + value);
-        playerData.CurHP += value;
-        Debug.Log("playerData.HP" + playerData.CurHP);
+        characterData.CurHP += value;
+        Debug.Log("playerData.HP" + characterData.CurHP);
     }
 
     public void StartTurn()
     {
-        Debug.Log($"StartTurn: HP {playerData.CurHP}");
+        Debug.Log($"StartTurn: HP {characterData.CurHP}");
 
         //recovery
         //Gain HP and MP when Start
