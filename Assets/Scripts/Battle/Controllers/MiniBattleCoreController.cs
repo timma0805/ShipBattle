@@ -32,6 +32,8 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private List<BattlePlayerCharacter> characterList;
     private List<BattleEnemy> enemyList;
+    private List<Vector2> characterPosList;
+    private List<Vector2> enemyPosList;
 
     //Setting
     private const int MaxMP = 3;
@@ -105,7 +107,10 @@ public class MiniBattleCoreController : MonoBehaviour
             Debug.Log("InitBattle");
             //Init List
             characterList = new List<BattlePlayerCharacter>();
+            characterPosList = new List<Vector2>(); //TODO: player can edit before start battle
             enemyList = new List<BattleEnemy>();
+            enemyPosList = new List<Vector2>();
+
             List<CardData> cardList = new List<CardData>();
 
             //Apply data
@@ -113,21 +118,31 @@ public class MiniBattleCoreController : MonoBehaviour
             {
                 cardList.AddRange(playerData.battlePlayerCharacterDatas[i].CardDataList);
 
-                BattlePlayerCharacter battlePlayerCharacter = transform.AddComponent<BattlePlayerCharacter>();
+                BattlePlayerCharacter battlePlayerCharacter = new BattlePlayerCharacter();
                 battlePlayerCharacter.Init(playerData.battlePlayerCharacterDatas[i]);
                 characterList.Add(battlePlayerCharacter);
+
+                if(i < 3)
+                    characterPosList.Add(new Vector2(0, i));    //Temp
+                else
+                    characterPosList.Add(new Vector2(1, i-3));    //Temp
             }
 
             cardController.StartBattle(cardList);
 
             for (int i = 0; i < entireMapData.EnemyDataList.Count; i++)
             {
-                BattleEnemy battleEnemy = transform.AddComponent<BattleEnemy>();
+                BattleEnemy battleEnemy = new BattleEnemy();
                 battleEnemy.Init(entireMapData.EnemyDataList[i]);
                 enemyList.Add(battleEnemy);
+
+                if (i < 3)
+                    enemyPosList.Add(new Vector2(5, i));    //Temp
+                else
+                    enemyPosList.Add(new Vector2(4, i-3));    //Temp
             }
 
-            uiCharacterPanel.StartBattle(characterList, enemyList);
+            uiCharacterPanel.StartBattle(characterList, characterPosList, enemyList, enemyPosList);
 
             gameObject.SetActive(true);
             RunStage(BattleStage.StartGame);
@@ -148,12 +163,12 @@ public class MiniBattleCoreController : MonoBehaviour
         cardController.StartPlayerTurn();
     }
 
-    public bool UsePlayerCard(Card card)
+    public async Task<bool> UsePlayerCard(Card card)
     {
         if (currentStage != BattleStage.PlayerTurn || isPause)
             return false;
 
-        if (!ProcessUsingCard(card))
+        if (!await ProcessUsingCard(card))
             return false;
 
         EndPlayerTurn();
@@ -168,6 +183,7 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task EnemyTurn()
     {
+        DoEnemyAction();
     }
 
    public void DoEnemyAction()
@@ -177,7 +193,7 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task EndEnemyTurn()
     {      
-            RunStage(BattleStage.PlayerTurn);
+        RunStage(BattleStage.PlayerTurn);
     }
 
 
@@ -204,29 +220,78 @@ public class MiniBattleCoreController : MonoBehaviour
         return false;
     }
 
-    private bool ProcessUsingCard(Card card)
+    private async Task<bool> ProcessUsingCard(Card card)
     {
         if (!UseMP(card.data.Cost))
             return false;
+
+        card.data.Type = CardType.Move;
 
         for (int i = 0; i < card.effectList.Count; i++)
         {
             //process effect
             var effect = card.effectList[i];
+            var characterIndex = characterList.FindIndex(x => x.characterData.Name == card.data.Occupation);
+            if (characterIndex == -1)
+            {
+                Debug.LogError("UsingCard character null");
+                return false;
+            }
+
+            var pos = characterPosList[characterIndex];
+            var character = characterList[characterIndex];
+
             if (card.data.Type == CardType.Attack)
             {
-                //if (effect.effectTarget == CardEffect.EffectTarget.Enemy)
-                //    enemyController.GetTargetEnemy().BeAttacked(effect.effectValue);
-                //else if (effect.effectTarget == CardEffect.EffectTarget.Self)
-                //    enemyController.GetTargetEnemy().BeAttacked(effect.effectValue);
+                int attackValue = Mathf.RoundToInt( effect.effectValue * character.characterData.Attack);
+                List<ITargetObject> targetObjects = GetEffectTargetObjects(pos, character.currentDirection, effect.direction, effect.distance);
+
+                foreach (ITargetObject targetObject in targetObjects) { 
+                    if (targetObject != null) {
+                        targetObject.BeAttacked(attackValue);
+                    }
+                }
+
+                uiCharacterPanel.CharacterAttack(pos);
+            }
+            else if(card.data.Type == CardType.Move)
+            {
+                var newpos = pos;
+                if(character.currentDirection == FaceDirection.Front)
+                {
+                    newpos = new Vector2(newpos.x + effect.distance, newpos.y);
+                }
+                else if (character.currentDirection == FaceDirection.Back)
+                {
+                    newpos = new Vector2(newpos.x - effect.distance, newpos.y);
+                }
+                else if (character.currentDirection == FaceDirection.Left)
+                {
+                    newpos = new Vector2(newpos.x , newpos.y - effect.distance);
+                }
+                else if (character.currentDirection == FaceDirection.Front)
+                {
+                    newpos = new Vector2(newpos.x , newpos.y + effect.distance);
+                }
+
+                bool isSucess = await uiCharacterPanel.MoveCharacter(pos, newpos);
+                characterPosList[characterIndex] = newpos;
             }
         }
 
         return true;
     }
 
-    public void ShowCardEffectRange(int rangeX, int rangeY, FaceDirection direction, Color color)
+    private List<ITargetObject> GetEffectTargetObjects(Vector2 startPos, FaceDirection direction, FaceDirection effectDirection, int distance)
     {
+        List<ITargetObject> targetObjects = new List<ITargetObject>();
+
+        return targetObjects;
+    }
+
+    public void ShowCardEffectRange(Card card)
+    {
+        Debug.Log("ShowCardEffectRange");
         //Vector2 startPos = mapController.GetPlayerCurrentPos();
         //mapController.ShowCardEffectWithTitlesColor(startPos, rangeX, rangeY, direction, color);
     }

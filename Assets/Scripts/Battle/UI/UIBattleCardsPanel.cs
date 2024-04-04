@@ -204,10 +204,10 @@ public class UIBattleCardsPanel : MonoBehaviour
         discardCardList.Add(card);
     }
 
-    private void UseCard(Card targetCard)
+    private async Task UseCard(Card targetCard)
     {
         //Check can use or not
-        if (!cardController.UsePlayerCard(targetCard))
+        if (!await cardController.UsePlayerCard(targetCard))
         {
             Debug.Log("UsePlayerCard return false");
             return;
@@ -227,7 +227,6 @@ public class UIBattleCardsPanel : MonoBehaviour
     public void TryToUseCard(Card card)
     {
         Debug.Log("TryToUseCard:" + card.data.ID);
-        cardController.ResetMapTiles();
 
         if (!CheckMouseInDragArea())
             return;

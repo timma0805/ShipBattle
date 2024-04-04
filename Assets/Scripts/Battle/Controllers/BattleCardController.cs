@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class BattleCardController : MonoBehaviour
@@ -113,22 +114,11 @@ public class BattleCardController : MonoBehaviour
 
     public void ShowEffectRange(Card card)
     {
-        //for(int i = 0; i < card.data.effectList.Count; i++)
-        //{
-        //    CardEffect effect = card.data.effectList[i];
-        //    //if(effect.haveDirection)
-        //    //    coreController.ShowCardEffectRange(effect.rangeX, effect.rangeY, effect.direction, Color.red);
-        //}
+        battleController.ShowCardEffectRange(card);
     }
 
-    public bool UsePlayerCard(Card card)
+    public async Task<bool> UsePlayerCard(Card card)
     {
-        return true;
-        //return coreController.UsePlayerCard(card);
-    }
-
-    public void ResetMapTiles()
-    {
-        //coreController.ResetMapTiles();
+        return await battleController.UsePlayerCard(card);
     }
 }

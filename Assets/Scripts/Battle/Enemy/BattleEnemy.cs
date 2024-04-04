@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BattleEnemy : MonoBehaviour, ITargetObject
+public class BattleEnemy : ITargetObject
 {
     private List<CharacterStatus> enemyStatusList;
     private CharacterState enemyState;
@@ -13,17 +13,6 @@ public class BattleEnemy : MonoBehaviour, ITargetObject
     private List<BattleMapTile> currentTiles;
 
     public EnemyData enemyData { get; private set; }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void Init(EnemyData _enemyData)
     {

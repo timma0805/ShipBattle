@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BattlePlayerCharacter : MonoBehaviour, ITargetObject
+public class BattlePlayerCharacter : ITargetObject
 {
     public BattlePlayerCharacterData characterData { get; private set; }
     public List<CharacterStatus> playerStatusList { get; private set; }
@@ -12,18 +12,6 @@ public class BattlePlayerCharacter : MonoBehaviour, ITargetObject
 
     private bool CanCancel;
     private int specialCountdown;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void Init(BattlePlayerCharacterData data)
     {
@@ -49,12 +37,10 @@ public class BattlePlayerCharacter : MonoBehaviour, ITargetObject
         Debug.Log("BattlePlayer BeMoved" + pos.x + pos.y + rotation);
         currentPos = pos;
         currentDirection = rotation;
-        throw new System.NotImplementedException();
     }
 
     public void BeTarget()
     {
-        throw new System.NotImplementedException();
     }
 
     public void BeDefenced(int value)
