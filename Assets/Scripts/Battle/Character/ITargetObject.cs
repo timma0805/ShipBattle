@@ -4,8 +4,14 @@ using UnityEngine;
 
 public interface ITargetObject
 {
-    void BeAttacked(int value);
-    void BeDefenced(int value);
+    int BeAttacked(int value);
+    int BeHealed(int value);
     void BeMoved(Vector2 pos, FaceDirection rotation);
     void BeTarget();
+
+    bool IsPlayerCharacter();
+
+    FaceDirection GetFaceDirection();
+
+    CharacterData GetCharacterData();
 }

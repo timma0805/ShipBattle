@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class BattlePlayerCharacter : ITargetObject
 {
-    public BattlePlayerCharacterData characterData { get; private set; }
+    private BattlePlayerCharacterData characterData;
     public List<CharacterStatus> playerStatusList { get; private set; }
     public CharacterState playerState { get; private set; }
-    public FaceDirection currentDirection { get; private set; }
+    private FaceDirection currentDirection;
     public Vector2 currentPos { get; private set; }
 
     private bool CanCancel;
@@ -25,11 +25,13 @@ public class BattlePlayerCharacter : ITargetObject
 
 
 
-    public void BeAttacked(int value)
+    public int BeAttacked(int value)
     {
         Debug.Log("BattlePlayer BeAttacked" + value);
-        characterData.CurHP += value;
+        characterData.CurHP -= value;
         Debug.Log("playerData.HP" + characterData.CurHP);
+
+        return characterData.CurHP;
     }
 
     public void BeMoved(Vector2 pos, FaceDirection rotation)
@@ -43,11 +45,12 @@ public class BattlePlayerCharacter : ITargetObject
     {
     }
 
-    public void BeDefenced(int value)
+    public int BeHealed(int value)
     {
-        Debug.Log("BattlePlayer BeDefenced" + value);
         characterData.CurHP += value;
         Debug.Log("playerData.HP" + characterData.CurHP);
+
+        return characterData.CurHP;
     }
 
     public void StartTurn()
@@ -62,5 +65,20 @@ public class BattlePlayerCharacter : ITargetObject
 
         //if (playerData.MP < playerData.MaxMP)
         //    playerData.MP += playerData.regMP;
+    }
+
+    public bool IsPlayerCharacter()
+    {
+        return true;
+    }
+
+    public CharacterData GetCharacterData()
+    {
+        return characterData;
+    }
+
+    public FaceDirection GetFaceDirection()
+    {
+        return currentDirection;
     }
 }

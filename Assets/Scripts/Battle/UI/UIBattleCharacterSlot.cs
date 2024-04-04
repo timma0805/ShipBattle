@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -24,10 +25,11 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     public Image groundImg;
     [SerializeField]
     public Button selectBtn;
+
     [SerializeField]
-    public Button confirmBtn;
+    public TMP_Text hpTxt;
     [SerializeField]
-    public Button cancelBtn;
+    public TMP_Text cdTxt;
 
     public int slotid { get; private set; }
     private Action<int> selectSlotCallback;
@@ -36,6 +38,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     public bool isPlayerCharacter { get; private set; }
     public GameObject characterObj { get; private set; }
     private Animator characterAnimator;
+    private bool isSelecting = false;
 
     //Setting
     const float scaleSize = 100.0f;
@@ -45,33 +48,31 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     private void Awake()
     {
         selectBtn.onClick.AddListener(ClickSelectSlot);
-        confirmBtn.onClick.AddListener(ClickConfirmBtn);
-        cancelBtn.onClick.AddListener(ClickCancelBtn);
-
         selectBtn.gameObject.SetActive(false);
-        confirmBtn.gameObject.SetActive(false);
-        cancelBtn.gameObject.SetActive(false);
     }
     // Start is called before the first frame update
     void Start()
     {
-        
+       
     }
 
     // Update is called once per frame
     void Update()
     {
-       
+
     }
     #endregion
 
     public void Init(int _slotid, Action<int> _selectCallback)
     {
+        hpTxt.text = "";
+        cdTxt.text = "";
+
         slotid = _slotid;
         selectSlotCallback = _selectCallback;
     }
 
-    public GameObject ApplyCharacter(GameObject characterPrefab, bool isPlayer)
+    public GameObject ApplyCharacter(GameObject characterPrefab, bool isPlayer, int hp)
     {
         isPlayerCharacter = isPlayer;
         GameObject newCharacter = Instantiate(characterPrefab, transform);
@@ -90,15 +91,17 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         characterObj = newCharacter;
         characterAnimator = newCharacter.GetComponent<Animator>();
 
+        UpdateHP(hp);
+
         return newCharacter;
     }
 
-    public async Task MoveCharacterToSlot(GameObject newCharacter, bool isPlayer)
+    public async Task<bool> MoveCharacterToSlot(GameObject newCharacter, bool isPlayer)
     {
         if(characterObj != null)
         {
             Debug.LogError("Have character in Slot");
-            return;
+            return false;
         }
 
         var tcs = new TaskCompletionSource<bool>();
@@ -132,6 +135,8 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
 
         PlayCharacterAnimation(CharacterAnimationEnum.idle);
         await Task.Delay(100);
+
+        return true;
     }
 
     // Callback method triggered by iTween when the movement is complete
@@ -141,7 +146,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         tcs.SetResult(true);
     }
 
-    public void PlayCharacterAnimation(CharacterAnimationEnum animationEnum)
+    public async Task PlayCharacterAnimation(CharacterAnimationEnum animationEnum)
     {
         if(characterObj == null) return;
 
@@ -180,19 +185,41 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         }
         else
         {
-            if(animationEnum == CharacterAnimationEnum.walk)
+            switch (animationEnum)
             {
-                characterAnimator.SetBool("isMoving", true);
-            }
-            else if (animationEnum == CharacterAnimationEnum.attack)
-            {
-                characterAnimator.Play("attack");
-            }
-            else if(animationEnum == CharacterAnimationEnum.idle)
-            {
-                characterAnimator.SetBool("isMoving", false);
-                characterAnimator.SetBool("attack", false);
-            }
+                case CharacterAnimationEnum.walk:
+                    characterAnimator.SetBool("isMoving", true);
+                    break;
+
+                case CharacterAnimationEnum.attack:
+                    characterAnimator.Play("attack");
+                    break;
+
+                case CharacterAnimationEnum.idle:
+                    characterAnimator.SetBool("isMoving", false);
+                    characterAnimator.SetBool("attack", false);
+                    break;
+                case CharacterAnimationEnum.hurt:
+                    float scaleTime = 0.25f;
+                    // Scale down to 0.5
+                    iTween.ScaleTo(characterObj, iTween.Hash(
+                        "scale", new Vector3(characterObj.transform.localScale.x*0.75f, characterObj.transform.localScale.y, characterObj.transform.localScale.z),
+                        "time", scaleTime / 2,
+                        "easetype", iTween.EaseType.easeInOutSine
+                    ));
+
+                    // Wait for half the duration of the scale animation
+                    await Task.Delay((int)(scaleTime / 2 * 1000 + 100));
+
+                    // Scale up to 1
+                    iTween.ScaleTo(characterObj, iTween.Hash(
+                        "scale", new Vector3(scaleSize, characterObj.transform.localScale.y, characterObj.transform.localScale.z),
+                        "time", scaleTime / 2,
+                        "easetype", iTween.EaseType.easeInOutSine
+                    ));
+
+                    break;
+            }           
         }
 
     }
@@ -211,14 +238,20 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     {
         isMouseOver = true;
 
-        selectBtn.gameObject.SetActive(true);
+        if (isSelecting)
+        {
+            selectBtn.gameObject.SetActive(true);
+        }
     }
 
     private void onMouseExit()
     {
         isMouseOver = false;
 
-        selectBtn.gameObject.SetActive(false);
+        if (isSelecting)
+        {
+            selectBtn.gameObject.SetActive(false);
+        }
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -231,24 +264,37 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         onMouseExit();
     }
 
-    private void ClickConfirmBtn()
-    {
-        Debug.Log("ClickConfirmBtn");
-    }
-    private void ClickCancelBtn()
-    {
-        Debug.Log("ClickCancelBtn");
-    }
-
-    private void TriggerOptions(bool isActive)
-    {
-        confirmBtn.gameObject.SetActive(isActive);
-        cancelBtn.gameObject.SetActive(isActive);
-    }
-
     public void RemoveCharacter()
     {
         characterObj = null;
         characterAnimator = null;
+    }
+
+    public void UpdateHP(int hp)
+    {
+        hpTxt.text = "HP: " + hp.ToString();
+    }
+
+    public void UpdateCountdown(int cd) { 
+        cdTxt.text = "CD: " + cd.ToString();
+    }
+
+    public void ShowEffectArea(bool needSelect)
+    {
+        isSelecting = needSelect;
+        groundImg.color = Color.red;
+    }
+
+    public void Reset()
+    {
+        isSelecting = false;
+        groundImg.color = Color.white;
+        selectBtn.gameObject.SetActive(false);
+
+        if (characterObj == null)
+        {
+            hpTxt.text = "";
+            cdTxt.text = "";
+        }
     }
 }

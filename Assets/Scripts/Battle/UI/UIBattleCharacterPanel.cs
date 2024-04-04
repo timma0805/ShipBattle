@@ -17,6 +17,8 @@ public class UIBattleCharacterPanel : MonoBehaviour
     private Button settingBtn;
     [SerializeField]
     private Button specialSkillBtn;
+    [SerializeField]
+    private Button endTurnBtn;
 
     [SerializeField]
     private GameObject[] characterPrefabList;
@@ -24,29 +26,21 @@ public class UIBattleCharacterPanel : MonoBehaviour
     private GameObject[] enemyPrefabList;
 
     private List<UIBattleCharacterSlot> characterSlotsList;
-
+    private MiniBattleCoreController controller;
     //Setting
     private const int maxSlotPerRow = 6;
-
+    private Vector2? waitSelectPos = null;
     // Start is called before the first frame update
     void Start()
     {
         settingBtn.onClick.AddListener(OpenSetting);
         specialSkillBtn.onClick.AddListener(ClickSpecialSkill);
+        endTurnBtn.onClick.AddListener(ClickEndTurn);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void Init(MiniBattleCoreController _controller)
     {
-        if(Input.GetKeyUp(KeyCode.Space))
-        {
-            characterSlotsList[0].PlayCharacterAnimation(UIBattleCharacterSlot.CharacterAnimationEnum.attack);
-            characterSlotsList[5].PlayCharacterAnimation(UIBattleCharacterSlot.CharacterAnimationEnum.attack);
-        }
-    }
-
-    public void Init()
-    {
+        controller = _controller;
         characterSlotsList = new List<UIBattleCharacterSlot>();
         for (int i = 0; i < characterSlots.Length; i++)
         {
@@ -62,18 +56,16 @@ public class UIBattleCharacterPanel : MonoBehaviour
         Debug.Log("characterSlotsList Count:" + characterSlotsList.Count);
     }
 
-    public void StartBattle(List<BattlePlayerCharacter> battlePlayerCharacters, List<Vector2> charactersPos,  List<BattleEnemy> battleEnemies, List<Vector2> enemiesPos)
+    public void StartBattle(List<ITargetObject> battleCharacters, List<Vector2> charactersPos)
     {
-        const float scaleSize = 100.0f;
 
-        for (int i = 0;i < battlePlayerCharacters.Count;i++)
+        for (int i = 0;i < battleCharacters.Count;i++)
         {
-           characterSlotsList[ConvertPosToSlotID(charactersPos[i])].ApplyCharacter(characterPrefabList[battlePlayerCharacters[i].characterData.ID-1], true);
-        }
-
-        for (int i = 0; i < battleEnemies.Count; i++)
-        {
-            characterSlotsList[ConvertPosToSlotID(enemiesPos[i])].ApplyCharacter(enemyPrefabList[battleEnemies[i].enemyData.ID-1], false);
+            var data = battleCharacters[i].GetCharacterData();
+            if(battleCharacters[i].IsPlayerCharacter() ) 
+                characterSlotsList[ConvertPosToSlotID(charactersPos[i])].ApplyCharacter(characterPrefabList[data.ID - 1], true, data.HP);
+            else
+                characterSlotsList[ConvertPosToSlotID(charactersPos[i])].ApplyCharacter(enemyPrefabList[data.ID - 1], false, data.HP);
         }
     }
 
@@ -87,34 +79,53 @@ public class UIBattleCharacterPanel : MonoBehaviour
         if (targetSlot == null)
         {
             targetSlot = orginSlot;
-            Debug.Log("Can't Move");
+            Debug.Log("targetSlot null Can't Move");
             return false;
         }
 
-        await targetSlot.MoveCharacterToSlot(orginSlot.characterObj, orginSlot.isPlayerCharacter);
+        bool isSuccess = await targetSlot.MoveCharacterToSlot(orginSlot.characterObj, orginSlot.isPlayerCharacter);
+        if (!isSuccess) 
+            return false;
+
         orginSlot.RemoveCharacter();
         return true;
     }
 
-    public void CharacterAttack(Vector2  pos)
+    private void CharacterAttack(Vector2  pos)
     {
         int slotID = ConvertPosToSlotID(pos);
+        if (slotID < 0 || slotID >= characterSlotsList.Count)
+            return;
+
         UIBattleCharacterSlot targetSlot = characterSlotsList.Find(x => x.slotid == slotID);
         PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.attack);    
     }
 
-    public void CharacterHurt(Vector2 pos)
+    private void CharacterHurt(Vector2 pos)
     {
         int slotID = ConvertPosToSlotID(pos);
+        if(slotID < 0 ||  slotID >= characterSlotsList.Count) 
+            return;
+
         UIBattleCharacterSlot targetSlot = characterSlotsList.Find(x => x.slotid == slotID);
         PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.hurt);
     }
 
-    public void CharacterDie(Vector2 pos)
+    private void CharacterDie(Vector2 pos)
     {
         int slotID = ConvertPosToSlotID(pos);
+        if (slotID < 0 || slotID >= characterSlotsList.Count)
+            return;
+
         UIBattleCharacterSlot targetSlot = characterSlotsList.Find(x => x.slotid == slotID);
         PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.die);
+    }
+
+    public async Task Attack(Vector2 pos, Vector2 targetPos)
+    {
+        CharacterAttack(pos);
+        await Task.Delay(100);
+        CharacterHurt(targetPos);
     }
 
     public void Victory()
@@ -139,6 +150,15 @@ public class UIBattleCharacterPanel : MonoBehaviour
         }
     }
 
+    public void UpdateHP(Vector2 pos, int hp)
+    {
+        int slotID = ConvertPosToSlotID(pos);
+        if (slotID < 0 || slotID >= characterSlotsList.Count)
+            return;
+
+        characterSlotsList[slotID].UpdateHP(hp);
+    }
+
     private void PlayCharacterAnimation(UIBattleCharacterSlot targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum characterAnimationEnum)
     {
         targetSlot.PlayCharacterAnimation(characterAnimationEnum);
@@ -149,8 +169,52 @@ public class UIBattleCharacterPanel : MonoBehaviour
         return Mathf.RoundToInt(vector.x  + vector.y * maxSlotPerRow);
     }
 
+    private Vector2 ConvertSlotIDToPos(int  slotID)
+    {
+        return new Vector2(slotID % maxSlotPerRow, slotID / maxSlotPerRow);
+    }
+
+    public async Task<Vector2> ShowEffectArea(List<Vector2> vectors, bool needSelect)
+    {
+        try
+        {
+            for (int i = 0; i < vectors.Count; i++)
+            {
+                int slotID = ConvertPosToSlotID(vectors[i]);
+                if(slotID >= 0 && slotID < characterSlotsList.Count)
+                    characterSlotsList[slotID].ShowEffectArea(needSelect);
+            }
+
+            if (needSelect)
+            {
+                waitSelectPos = null;
+                while (!waitSelectPos.HasValue)
+                {
+                    await Task.Yield();
+                }
+
+                return waitSelectPos.Value;
+            }
+            else
+            {
+                return vectors[0];
+            }
+        }
+        catch(System.Exception e)
+        {
+            Debug.LogError("ShowEffectArea Error: " + e.Message);
+            return vectors[0];
+        }
+    }
+
     private void SelectSlot(int slotid)
     {
+        waitSelectPos = ConvertSlotIDToPos(slotid);
+        for(int i = 0;i < characterSlotsList.Count;i++)
+        {
+            characterSlotsList[i].Reset();
+        }
+        Debug.Log("SelectSlot: " + slotid + " waitSelectPos: " + waitSelectPos);
 
     }
 
@@ -160,5 +224,8 @@ public class UIBattleCharacterPanel : MonoBehaviour
     }
 
     private void ClickSpecialSkill() { }
+    private void ClickEndTurn() {
+        controller.PlayerSelectEndTurn();
+    }
 
 }

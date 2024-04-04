@@ -23,7 +23,7 @@ public class Card
 
             if (_data.Target2 != null)
             {
-                CardEffect effect2 = new CardEffect(_data.Target2.Value, _data.Effect2.Value, _data.Value2.Value, _data.Distance2.Value, _data.Direction2, _data.Success2.Value, _data.IsAreaEffect2.Value);
+                CardEffect effect2 = new CardEffect(_data.Target2.Value, _data.Effect2.Value, _data.Value2.Value, _data.Distance2.Value, _data.Direction2.Value, _data.Success2.Value, _data.IsAreaEffect2.Value);
                 effectList.Add(effect2);
             }
         }

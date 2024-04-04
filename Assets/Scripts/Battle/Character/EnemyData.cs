@@ -4,15 +4,9 @@ using UnityEngine;
 using System;
 
 [Serializable]
-public class EnemyData
-{
-    public int ID;
-    public string Name;
-    public CharacterType Type;
-    public int HP;
-    public float Speed;
+public class EnemyData: CharacterData
+{ 
     public string SkillSetStr;
-    public string Description;
     
     public List<EnemySkillData> SkillList;
     public EnemyData()

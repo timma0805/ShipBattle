@@ -218,28 +218,28 @@ public class BattleMapController : MonoBehaviour
                 targetTilePosition = new Vector3(targetTilePosition.x, targetTilePosition.y, targetTilePosition.z - tileLength / 2.0f);
             }
         }
-        else if (direction == FaceDirection.Right)
-        {
-            if (targetWidth > 1 && targetWidth % 2 == 0)
-            {
-                targetTilePosition = new Vector3(targetTilePosition.x, targetTilePosition.y, targetTilePosition.z - tileLength / 2.0f);
-            }
-            if (targetLength > 1 && targetLength % 2 == 0)
-            {
-                targetTilePosition = new Vector3(targetTilePosition.x - tileLength / 2.0f, targetTilePosition.y, targetTilePosition.z );
-            }
-        }
-        else if (direction == FaceDirection.Left)
-        {
-            if (targetWidth > 1 && targetWidth % 2 == 0)
-            {
-                targetTilePosition = new Vector3(targetTilePosition.x, targetTilePosition.y, targetTilePosition.z + tileLength / 2.0f);
-            }
-            if (targetLength > 1 && targetLength % 2 == 0)
-            {
-                targetTilePosition = new Vector3(targetTilePosition.x + tileLength / 2.0f, targetTilePosition.y, targetTilePosition.z );
-            }
-        }
+        //else if (direction == FaceDirection.Right)
+        //{
+        //    if (targetWidth > 1 && targetWidth % 2 == 0)
+        //    {
+        //        targetTilePosition = new Vector3(targetTilePosition.x, targetTilePosition.y, targetTilePosition.z - tileLength / 2.0f);
+        //    }
+        //    if (targetLength > 1 && targetLength % 2 == 0)
+        //    {
+        //        targetTilePosition = new Vector3(targetTilePosition.x - tileLength / 2.0f, targetTilePosition.y, targetTilePosition.z );
+        //    }
+        //}
+        //else if (direction == FaceDirection.Left)
+        //{
+        //    if (targetWidth > 1 && targetWidth % 2 == 0)
+        //    {
+        //        targetTilePosition = new Vector3(targetTilePosition.x, targetTilePosition.y, targetTilePosition.z + tileLength / 2.0f);
+        //    }
+        //    if (targetLength > 1 && targetLength % 2 == 0)
+        //    {
+        //        targetTilePosition = new Vector3(targetTilePosition.x + tileLength / 2.0f, targetTilePosition.y, targetTilePosition.z );
+        //    }
+        //}
 
         //Move to target position
         targetObj.transform.localPosition = targetTilePosition;
@@ -284,18 +284,18 @@ public class BattleMapController : MonoBehaviour
             else if (Y - targetLength / 2 < 0)
                 Y = targetLength/2;
         }
-        else if (direction == FaceDirection.Right || direction == FaceDirection.Left)
-        {
-            if (X + targetLength / 2 > mapX-1)
-                X = mapX - targetLength / 2-1;
-            else if (X - targetLength / 2 < 0)
-                X = targetLength / 2;
+        //else if (direction == FaceDirection.Right || direction == FaceDirection.Left)
+        //{
+        //    if (X + targetLength / 2 > mapX-1)
+        //        X = mapX - targetLength / 2-1;
+        //    else if (X - targetLength / 2 < 0)
+        //        X = targetLength / 2;
 
-            if (Y + targetWidth / 2 > mapY-1)
-                Y = mapY - targetWidth / 2-1;
-            else if (Y - targetWidth / 2 < 0)
-                Y = targetWidth / 2;
-        }
+        //    if (Y + targetWidth / 2 > mapY-1)
+        //        Y = mapY - targetWidth / 2-1;
+        //    else if (Y - targetWidth / 2 < 0)
+        //        Y = targetWidth / 2;
+        //}
         return (X,Y);
     }
 
@@ -366,32 +366,32 @@ public class BattleMapController : MonoBehaviour
 
     public void ShowCardEffectWithTitlesColor(Vector2 startPos, int rangeX, int rangeY, FaceDirection direction, Color color)
     {
-        if(playerDirection == FaceDirection.Front)
-        {
-            ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
-        }
-        else if (playerDirection == FaceDirection.Back)
-        {
-            if(direction == FaceDirection.Front)
-                ChangeTitlesColor(startPos, rangeX, rangeY, FaceDirection.Back, color);
-            else if (direction == FaceDirection.Back)
-                ChangeTitlesColor(startPos, rangeX, rangeY, FaceDirection.Front, color);
-            else if (direction == FaceDirection.Right)
-                ChangeTitlesColor(startPos, rangeX, rangeY, FaceDirection.Left, color);
-            else
-                ChangeTitlesColor(startPos, rangeX, rangeY, FaceDirection.Right, color);
-        }
-        else if (playerDirection == FaceDirection.Right)
-        {
-            if (direction == FaceDirection.Front)
-                ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
-            else if (direction == FaceDirection.Back)
-                ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
-            else if (direction == FaceDirection.Right)
-                ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
-            else
-                ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
-        }
+        //if(playerDirection == FaceDirection.Front)
+        //{
+        //    ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
+        //}
+        //else if (playerDirection == FaceDirection.Back)
+        //{
+        //    if(direction == FaceDirection.Front)
+        //        ChangeTitlesColor(startPos, rangeX, rangeY, FaceDirection.Back, color);
+        //    else if (direction == FaceDirection.Back)
+        //        ChangeTitlesColor(startPos, rangeX, rangeY, FaceDirection.Front, color);
+        //    else if (direction == FaceDirection.Right)
+        //        ChangeTitlesColor(startPos, rangeX, rangeY, FaceDirection.Left, color);
+        //    else
+        //        ChangeTitlesColor(startPos, rangeX, rangeY, FaceDirection.Right, color);
+        //}
+        //else if (playerDirection == FaceDirection.Right)
+        //{
+        //    if (direction == FaceDirection.Front)
+        //        ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
+        //    else if (direction == FaceDirection.Back)
+        //        ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
+        //    else if (direction == FaceDirection.Right)
+        //        ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
+        //    else
+        //        ChangeTitlesColor(startPos, rangeX, rangeY, direction, color);
+        //}
 
     }
 
@@ -419,22 +419,22 @@ public class BattleMapController : MonoBehaviour
             startY = (int)startPos.y - rangeY;
             endY = (int)startPos.y;
         }
-        else if (direction == FaceDirection.Right)
-        {
-            startX = (int)startPos.x;
-            endX = startX + rangeX;
+        //else if (direction == FaceDirection.Right)
+        //{
+        //    startX = (int)startPos.x;
+        //    endX = startX + rangeX;
 
-            startY = Mathf.RoundToInt(startPos.y - rangeY / 2);
-            endY = startY + rangeY;
-        }
-        else if (direction == FaceDirection.Left)
-        {
-            startX = (int)startPos.x - rangeX;
-            endX = (int)startPos.x;
+        //    startY = Mathf.RoundToInt(startPos.y - rangeY / 2);
+        //    endY = startY + rangeY;
+        //}
+        //else if (direction == FaceDirection.Left)
+        //{
+        //    startX = (int)startPos.x - rangeX;
+        //    endX = (int)startPos.x;
 
-            startY = Mathf.RoundToInt(startPos.y - rangeY / 2);
-            endY = startY + rangeY;
-        }
+        //    startY = Mathf.RoundToInt(startPos.y - rangeY / 2);
+        //    endY = startY + rangeY;
+        //}
 
         startX = startX < 0 ? 0 : startX;
         endX = endX > mapX ? mapX : endX;

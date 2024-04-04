@@ -12,7 +12,7 @@ public class BattleEnemy : ITargetObject
     private FaceDirection currentDirection;
     private List<BattleMapTile> currentTiles;
 
-    public EnemyData enemyData { get; private set; }
+    private EnemyData enemyData;
 
     public void Init(EnemyData _enemyData)
     {
@@ -21,6 +21,7 @@ public class BattleEnemy : ITargetObject
         currentTiles = new List<BattleMapTile>();
         specialCountdown = -1;
         enemyState = CharacterState.Idle;
+        enemyData.CurHP =enemyData.HP;
     }
 
     public void DoAction()
@@ -32,13 +33,15 @@ public class BattleEnemy : ITargetObject
         throw new System.NotImplementedException();
     }
 
-    public void BeAttacked(int value)
+    public int BeAttacked(int value)
     {
-        enemyData.HP += value;
-        Debug.Log("enemyData.HP" + enemyData.HP);
+        enemyData.CurHP -= value;
+        Debug.Log("enemyData.HP" + enemyData.CurHP);
 
         if (enemyData.HP <= 0)
             enemyState = CharacterState.Dead;
+
+        return enemyData.CurHP;
     }
 
     public void BeMoved(Vector2 pos, FaceDirection rotation)
@@ -46,10 +49,12 @@ public class BattleEnemy : ITargetObject
         throw new System.NotImplementedException();
     }
 
-    public void BeDefenced(int value)
+    public int BeHealed(int value)
     {
-        enemyData.HP += value;
-        Debug.Log("enemyData.HP" + enemyData.HP);
+        enemyData.CurHP += value;
+        Debug.Log("enemyData.HP" + enemyData.CurHP);
+
+        return enemyData.CurHP;
     }
 
     public bool IsDead()
@@ -58,5 +63,20 @@ public class BattleEnemy : ITargetObject
             return true;
 
         return enemyData.HP <= 0;
+    }
+
+    public bool IsPlayerCharacter()
+    {
+        return false;
+    }
+
+    public CharacterData GetCharacterData()
+    {
+        return enemyData;
+    }
+
+    public FaceDirection GetFaceDirection()
+    {
+        return currentDirection;
     }
 }

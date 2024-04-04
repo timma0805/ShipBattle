@@ -165,9 +165,7 @@ public enum BattleStage
     public enum FaceDirection
     {
         Front,
-        Right,
         Back,
-        Left,
         All,
         No
     }

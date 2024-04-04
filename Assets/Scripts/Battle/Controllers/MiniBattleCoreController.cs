@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
+using UnityEngine.TextCore.Text;
 
 public class MiniBattleCoreController : MonoBehaviour
 {
@@ -18,8 +20,10 @@ public class MiniBattleCoreController : MonoBehaviour
         PauseGame
     }
 
-    public UIBattleCharacterPanel uiCharacterPanel;
-    public BattleCardController cardController;
+    [SerializeField]
+    private UIBattleCharacterPanel uiCharacterPanel;
+    [SerializeField]
+    private UIBattleCardsPanel uIBattleCardsPanel;
 
     private BattleStage previousStage;
     private BattleStage currentStage;
@@ -30,13 +34,11 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private Action finishBattleCallback;
 
-    private List<BattlePlayerCharacter> characterList;
-    private List<BattleEnemy> enemyList;
+    private List<ITargetObject> characterList;
     private List<Vector2> characterPosList;
-    private List<Vector2> enemyPosList;
 
     //Setting
-    private const int MaxMP = 3;
+    private const int maxMP = 99;
     private int currentMP;
     public int selectedMapIndex = 0;
 
@@ -58,8 +60,8 @@ public class MiniBattleCoreController : MonoBehaviour
     public void Init(Action callback )
     {
         finishBattleCallback = callback;
-        cardController.Init(this);
-        uiCharacterPanel.Init();
+        uIBattleCardsPanel.Init(this);
+        uiCharacterPanel.Init(this);
     }
 
     public void StartBattle(BattlePlayerData _battlePlayerData, EntireMapData _entireMapData)
@@ -106,10 +108,9 @@ public class MiniBattleCoreController : MonoBehaviour
         {
             Debug.Log("InitBattle");
             //Init List
-            characterList = new List<BattlePlayerCharacter>();
+            characterList = new List<ITargetObject>();
+            List<string> characterOccList = new List<string>();
             characterPosList = new List<Vector2>(); //TODO: player can edit before start battle
-            enemyList = new List<BattleEnemy>();
-            enemyPosList = new List<Vector2>();
 
             List<CardData> cardList = new List<CardData>();
 
@@ -121,28 +122,32 @@ public class MiniBattleCoreController : MonoBehaviour
                 BattlePlayerCharacter battlePlayerCharacter = new BattlePlayerCharacter();
                 battlePlayerCharacter.Init(playerData.battlePlayerCharacterDatas[i]);
                 characterList.Add(battlePlayerCharacter);
+                characterOccList.Add(battlePlayerCharacter.GetCharacterData().Name);
 
-                if(i < 3)
+                if (i < 3)
                     characterPosList.Add(new Vector2(0, i));    //Temp
                 else
                     characterPosList.Add(new Vector2(1, i-3));    //Temp
             }
 
-            cardController.StartBattle(cardList);
+            uIBattleCardsPanel.StartBattle(cardList, characterOccList);
 
             for (int i = 0; i < entireMapData.EnemyDataList.Count; i++)
             {
                 BattleEnemy battleEnemy = new BattleEnemy();
                 battleEnemy.Init(entireMapData.EnemyDataList[i]);
-                enemyList.Add(battleEnemy);
+                characterList.Add(battleEnemy);
 
                 if (i < 3)
-                    enemyPosList.Add(new Vector2(5, i));    //Temp
+                    characterPosList.Add(new Vector2(5, i));    //Temp
                 else
-                    enemyPosList.Add(new Vector2(4, i-3));    //Temp
+                    characterPosList.Add(new Vector2(4, i-3));    //Temp
             }
 
-            uiCharacterPanel.StartBattle(characterList, characterPosList, enemyList, enemyPosList);
+            uiCharacterPanel.StartBattle(characterList, characterPosList);
+
+            currentMP = maxMP;
+            uIBattleCardsPanel.UpdateMP(currentMP, maxMP);
 
             gameObject.SetActive(true);
             RunStage(BattleStage.StartGame);
@@ -160,7 +165,10 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task PlayerTurn()
     {
-        cardController.StartPlayerTurn();
+        currentMP = maxMP;
+        uIBattleCardsPanel.UpdateMP(currentMP, maxMP);
+
+        await uIBattleCardsPanel.DrawCard();
     }
 
     public async Task<bool> UsePlayerCard(Card card)
@@ -171,13 +179,22 @@ public class MiniBattleCoreController : MonoBehaviour
         if (!await ProcessUsingCard(card))
             return false;
 
-        EndPlayerTurn();
+        uIBattleCardsPanel.UpdateMP(currentMP, maxMP);
+
+        if(currentMP == 0)
+            await EndPlayerTurn();
 
         return true;
     }
 
+    public void PlayerSelectEndTurn()
+    {
+        EndPlayerTurn();
+    }
+
     private async Task EndPlayerTurn()
     {
+        uIBattleCardsPanel.EndPlayerTurn();
         RunStage(BattleStage.EnemyTurn);
     }
 
@@ -211,7 +228,7 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private bool UseMP(int cost)
     {
-        if (currentMP + cost <= MaxMP)
+        if (currentMP - cost >= 0)
         {
             currentMP -= cost;
             return true;
@@ -222,16 +239,15 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task<bool> ProcessUsingCard(Card card)
     {
-        if (!UseMP(card.data.Cost))
+        //Check MP
+        if (currentMP - card.data.Cost < 0)
             return false;
-
-        card.data.Type = CardType.Move;
-
+           
         for (int i = 0; i < card.effectList.Count; i++)
         {
             //process effect
             var effect = card.effectList[i];
-            var characterIndex = characterList.FindIndex(x => x.characterData.Name == card.data.Occupation);
+            var characterIndex = characterList.FindIndex(x => x.GetCharacterData().Name == card.data.Occupation);
             if (characterIndex == -1)
             {
                 Debug.LogError("UsingCard character null");
@@ -243,52 +259,92 @@ public class MiniBattleCoreController : MonoBehaviour
 
             if (card.data.Type == CardType.Attack)
             {
-                int attackValue = Mathf.RoundToInt( effect.effectValue * character.characterData.Attack);
-                List<ITargetObject> targetObjects = GetEffectTargetObjects(pos, character.currentDirection, effect.direction, effect.distance);
+                int attackValue = Mathf.RoundToInt( effect.effectValue * character.GetCharacterData().Attack);
+                Vector2 newpos = await GetTargetPos(pos, effect, character);
+                await uiCharacterPanel.Attack(pos, newpos);
+                ITargetObject target = null;
+                int index = characterPosList.FindIndex(x => x == newpos);
 
-                foreach (ITargetObject targetObject in targetObjects) { 
-                    if (targetObject != null) {
-                        targetObject.BeAttacked(attackValue);
-                    }
+                if (effect.effectTarget == CardEffectTarget.Any)
+                {
+                    if (index != -1)
+                        target = characterList[index];
+                }
+                else if (effect.effectTarget == CardEffectTarget.Enemy)
+                {
+                    if (index != -1 && !characterList[index].IsPlayerCharacter())
+                        target = characterList[index];
+                }
+                else if (effect.effectTarget == CardEffectTarget.Ally || effect.effectTarget == CardEffectTarget.Self)
+                {
+                    if (index != -1 && characterList[index].IsPlayerCharacter())
+                        target = characterList[index];
                 }
 
-                uiCharacterPanel.CharacterAttack(pos);
+                if (target != null)
+                {
+                    int hp = target.BeAttacked(attackValue);
+                    uiCharacterPanel.UpdateHP(newpos, hp);
+                }
             }
             else if(card.data.Type == CardType.Move)
             {
-                var newpos = pos;
-                if(character.currentDirection == FaceDirection.Front)
-                {
-                    newpos = new Vector2(newpos.x + effect.distance, newpos.y);
-                }
-                else if (character.currentDirection == FaceDirection.Back)
-                {
-                    newpos = new Vector2(newpos.x - effect.distance, newpos.y);
-                }
-                else if (character.currentDirection == FaceDirection.Left)
-                {
-                    newpos = new Vector2(newpos.x , newpos.y - effect.distance);
-                }
-                else if (character.currentDirection == FaceDirection.Front)
-                {
-                    newpos = new Vector2(newpos.x , newpos.y + effect.distance);
-                }
-
+                Vector2 newpos = await GetTargetPos(pos, effect, character);
                 bool isSucess = await uiCharacterPanel.MoveCharacter(pos, newpos);
-                characterPosList[characterIndex] = newpos;
+                if (isSucess)
+                    characterPosList[characterIndex] = newpos;
+                else
+                    return false;
             }
         }
+
+        if (!UseMP(card.data.Cost))
+            return false;
 
         return true;
     }
 
-    private List<ITargetObject> GetEffectTargetObjects(Vector2 startPos, FaceDirection direction, FaceDirection effectDirection, int distance)
+    private async Task<Vector2> GetTargetPos(Vector2 pos, CardEffect effect, ITargetObject character)
     {
-        List<ITargetObject> targetObjects = new List<ITargetObject>();
+        List<Vector2> vectors = new List<Vector2>();
 
-        return targetObjects;
+        for (int i = 1; i < effect.distance+1; i++)
+        {
+            if (effect.direction == FaceDirection.All)
+            {
+                vectors.Add(new Vector2(pos.x +i, pos.y));
+                vectors.Add(new Vector2(pos.x - i, pos.y));
+                vectors.Add(new Vector2(pos.x, pos.y +i));
+                vectors.Add(new Vector2(pos.x, pos.y - i));
+            }
+            else if (effect.direction == FaceDirection.Front)
+            {
+                if (character.GetFaceDirection() == FaceDirection.Front)
+                {
+                    vectors.Add(new Vector2(pos.x + i, pos.y));
+                }
+                else if (character.GetFaceDirection() == FaceDirection.Back)
+                {
+                    vectors.Add(new Vector2(pos.x - i, pos.y));
+                }
+            }
+            else if (effect.direction == FaceDirection.Back)
+            {
+                if (character.GetFaceDirection() == FaceDirection.Front)
+                {
+                    vectors.Add(new Vector2(pos.x - i, pos.y));
+                }
+                else if (character.GetFaceDirection() == FaceDirection.Back)
+                {
+                    vectors.Add(new Vector2(pos.x + i, pos.y));
+                }
+            }
+        }
+
+        Vector2 newpos = await uiCharacterPanel.ShowEffectArea(vectors, true);
+
+        return newpos;
     }
-
     public void ShowCardEffectRange(Card card)
     {
         Debug.Log("ShowCardEffectRange");
