@@ -448,7 +448,7 @@ public class MiniBattleCoreController : MonoBehaviour
         if(effectTarget == CardEffectTarget.Any ) 
             return vectors;
 
-        List<Vector2> resultVectors = vectors;
+        List<Vector2> resultVectors = new List<Vector2>(vectors);
 
         for (int i = 0; i < vectors.Count; i++)
         {
