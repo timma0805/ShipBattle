@@ -308,6 +308,8 @@ public class MiniBattleCoreController : MonoBehaviour
     {
         List<Vector2> vectors = new List<Vector2>();
 
+        vectors.Add(pos);
+
         for (int i = 1; i < effect.distance+1; i++)
         {
             if (effect.direction == FaceDirection.All)

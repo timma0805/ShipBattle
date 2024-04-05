@@ -124,7 +124,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
     public async Task Attack(Vector2 pos, Vector2 targetPos)
     {
         CharacterAttack(pos);
-        await Task.Delay(100);
+        await Task.Delay(200);
         CharacterHurt(targetPos);
     }
 
@@ -166,6 +166,8 @@ public class UIBattleCharacterPanel : MonoBehaviour
 
     private int ConvertPosToSlotID(Vector2 vector)
     {
+        if ((vector.x < 0) || (vector.y < 0))
+            return -1;
         return Mathf.RoundToInt(vector.x  + vector.y * maxSlotPerRow);
     }
 
