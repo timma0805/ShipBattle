@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using static UnityEditor.PlayerSettings;
 using UnityEngine.TextCore.Text;
+using static JsonManager;
 
 public class MiniBattleCoreController : MonoBehaviour
 {
@@ -117,6 +118,7 @@ public class MiniBattleCoreController : MonoBehaviour
             //Apply data
             for (int i = 0; i < playerData.battlePlayerCharacterDatas.Count; i++)
             {
+                playerData.battlePlayerCharacterDatas[i].CurHP = playerData.battlePlayerCharacterDatas[i].HP;
                 cardList.AddRange(playerData.battlePlayerCharacterDatas[i].CardDataList);
 
                 BattlePlayerCharacter battlePlayerCharacter = new BattlePlayerCharacter();
@@ -134,6 +136,8 @@ public class MiniBattleCoreController : MonoBehaviour
 
             for (int i = 0; i < entireMapData.EnemyDataList.Count; i++)
             {
+                entireMapData.EnemyDataList[i].CurHP = entireMapData.EnemyDataList[i].HP;
+
                 BattleEnemy battleEnemy = new BattleEnemy();
                 battleEnemy.Init(entireMapData.EnemyDataList[i]);
                 characterList.Add(battleEnemy);
@@ -257,44 +261,112 @@ public class MiniBattleCoreController : MonoBehaviour
             var pos = characterPosList[characterIndex];
             var character = characterList[characterIndex];
 
-            if (card.data.Type == CardType.Attack)
+            if (effect.effectProperty == CardEffectType.Attack)
             {
                 int attackValue = Mathf.RoundToInt( effect.effectValue * character.GetCharacterData().Attack);
-                Vector2 newpos = await GetTargetPos(pos, effect, character);
-                await uiCharacterPanel.Attack(pos, newpos);
+                if (effect.isAreaEffect)
+                {
+                    if(effect.IsAreaTriggerAfterDIstance)
+                    {
+                        Vector2 newpos = await GetTargetPos(pos, effect, character);
+                        if (newpos == pos)
+                            return false;
+
+                        List<Vector2> effectPosList = GetEffectArea(newpos, effect.distance, effect.direction, character.GetFaceDirection(), effect.effectTarget, false);
+                        effectPosList.Add(pos);
+
+                        for (int j = 0; j < effectPosList.Count; j++)
+                        {
+                            await ProcessAttack(effect, pos, effectPosList[j], attackValue, j == 0);
+                        }
+                    }
+                    else
+                    {
+                        Vector2 newpos = await GetTargetPos(pos, effect, character); //just for waiting Player click
+                        List<Vector2> effectPosList = GetEffectArea(pos, effect.distance, effect.direction, character.GetFaceDirection(), effect.effectTarget, false);
+                        for (int j = 0; j < effectPosList.Count; j++)
+                        {
+                            await ProcessAttack(effect, pos, effectPosList[j], attackValue, j == 0);
+                        }
+                    }
+                }
+                else
+                {
+                    Vector2 newpos = await GetTargetPos(pos, effect, character);
+                    if (newpos == pos)
+                        return false;
+
+                    await ProcessAttack(effect, pos, newpos, attackValue, true);
+                }
+            }
+            else if (effect.effectProperty == CardEffectType.Move)
+            {
+                if (effect.effectTarget == CardEffectTarget.Self)
+                {
+                    Vector2 newpos = await GetTargetPos(pos, effect, character);
+                    if (newpos == pos)
+                        return false;
+
+                    bool isSucess = await uiCharacterPanel.MoveCharacter(pos, newpos, character.GetCharacterData());
+                    if (isSucess)
+                        characterPosList[characterIndex] = newpos;
+                    else
+                        return false;
+                }
+                else
+                {
+                    Vector2 targetPos = await GetTargetPos(pos, effect, character);
+                    if (targetPos == pos)
+                        return false;
+                    Vector2 newpos = await GetTargetPos(targetPos, effect, character);
+                    if (newpos == pos)
+                        return false;
+
+                    ITargetObject target = null;
+                    int index = characterPosList.FindIndex(x => x == targetPos);
+
+                    if (index != -1)
+                        target = characterList[index];
+
+                    if (target != null)
+                    {
+                        bool isSucess = await uiCharacterPanel.MoveCharacter(targetPos, newpos, character.GetCharacterData());
+                        if (isSucess)
+                            characterPosList[index] = newpos;
+                        else
+                            return false;
+                    }
+                    else
+                        return false;
+                }
+            }
+            else if (effect.effectProperty == CardEffectType.HP)
+            {
+                Vector2 newpos = pos;
+
+                if (effect.effectTarget != CardEffectTarget.Self)
+                {
+                    newpos = await GetTargetPos(pos, effect, character);
+                    if(newpos == pos)
+                        return false;
+                }
+                else
+                    newpos = await uiCharacterPanel.ShowEffectArea(new List<Vector2> { pos }, true, effect.isAreaEffect);
+
+
+                await uiCharacterPanel.Heal(pos, newpos);
                 ITargetObject target = null;
                 int index = characterPosList.FindIndex(x => x == newpos);
 
-                if (effect.effectTarget == CardEffectTarget.Any)
-                {
-                    if (index != -1)
-                        target = characterList[index];
-                }
-                else if (effect.effectTarget == CardEffectTarget.Enemy)
-                {
-                    if (index != -1 && !characterList[index].IsPlayerCharacter())
-                        target = characterList[index];
-                }
-                else if (effect.effectTarget == CardEffectTarget.Ally || effect.effectTarget == CardEffectTarget.Self)
-                {
-                    if (index != -1 && characterList[index].IsPlayerCharacter())
-                        target = characterList[index];
-                }
+                if (index != -1)
+                    target = characterList[index];
 
                 if (target != null)
                 {
-                    int hp = target.BeAttacked(attackValue);
+                    int hp = target.BeHealed((int)effect.effectValue);
                     uiCharacterPanel.UpdateHP(newpos, hp);
                 }
-            }
-            else if(card.data.Type == CardType.Move)
-            {
-                Vector2 newpos = await GetTargetPos(pos, effect, character);
-                bool isSucess = await uiCharacterPanel.MoveCharacter(pos, newpos);
-                if (isSucess)
-                    characterPosList[characterIndex] = newpos;
-                else
-                    return false;
+
             }
         }
 
@@ -304,48 +376,104 @@ public class MiniBattleCoreController : MonoBehaviour
         return true;
     }
 
+    private async Task ProcessAttack(CardEffect effect, Vector2 pos, Vector2 newpos, int attackValue, bool needAttackAnimation)
+    {
+        await uiCharacterPanel.Attack(pos, newpos, needAttackAnimation);
+        ITargetObject target = null;
+        int index = characterPosList.FindIndex(x => x == newpos);
+
+        if (index != -1)
+            target = characterList[index];
+
+        if (target != null)
+        {
+            int hp = target.BeAttacked(attackValue);
+            uiCharacterPanel.UpdateHP(newpos, hp);
+        }
+    }
+
     private async Task<Vector2> GetTargetPos(Vector2 pos, CardEffect effect, ITargetObject character)
+    {
+        List<Vector2> vectors = GetEffectArea(pos, effect.distance, effect.direction, character.GetFaceDirection(), effect.effectTarget, effect.effectProperty == CardEffectType.Move);
+        if (vectors.Count == 0)
+        {
+            Debug.Log("GetEffectArea 0 target");
+            return pos;
+        }
+        if(effect.effectTarget == CardEffectTarget.Self && effect.effectProperty == CardEffectType.HP)
+            vectors.Add(pos);
+
+        Vector2 newpos = await uiCharacterPanel.ShowEffectArea(vectors, true, effect.isAreaEffect);
+
+        return newpos;
+    }
+
+    private List<Vector2> GetEffectArea(Vector2 pos, int distance, FaceDirection direction, FaceDirection characterDirection, CardEffectTarget effectTarget, bool avoidCharacter)
     {
         List<Vector2> vectors = new List<Vector2>();
 
-        vectors.Add(pos);
-
-        for (int i = 1; i < effect.distance+1; i++)
+        for (int i = 1; i < distance + 1; i++)
         {
-            if (effect.direction == FaceDirection.All)
+            if (direction == FaceDirection.All)
             {
-                vectors.Add(new Vector2(pos.x +i, pos.y));
+                vectors.Add(new Vector2(pos.x + i, pos.y));
                 vectors.Add(new Vector2(pos.x - i, pos.y));
-                vectors.Add(new Vector2(pos.x, pos.y +i));
+                vectors.Add(new Vector2(pos.x, pos.y + i));
                 vectors.Add(new Vector2(pos.x, pos.y - i));
             }
-            else if (effect.direction == FaceDirection.Front)
+            else if (direction == FaceDirection.Front)
             {
-                if (character.GetFaceDirection() == FaceDirection.Front)
+                if (characterDirection == FaceDirection.Front)
                 {
                     vectors.Add(new Vector2(pos.x + i, pos.y));
                 }
-                else if (character.GetFaceDirection() == FaceDirection.Back)
+                else if (characterDirection == FaceDirection.Back)
                 {
                     vectors.Add(new Vector2(pos.x - i, pos.y));
                 }
             }
-            else if (effect.direction == FaceDirection.Back)
+            else if (direction == FaceDirection.Back)
             {
-                if (character.GetFaceDirection() == FaceDirection.Front)
+                if (characterDirection == FaceDirection.Front)
                 {
                     vectors.Add(new Vector2(pos.x - i, pos.y));
                 }
-                else if (character.GetFaceDirection() == FaceDirection.Back)
+                else if (characterDirection == FaceDirection.Back)
                 {
                     vectors.Add(new Vector2(pos.x + i, pos.y));
                 }
             }
         }
 
-        Vector2 newpos = await uiCharacterPanel.ShowEffectArea(vectors, true);
+        if(effectTarget == CardEffectTarget.Any ) 
+            return vectors;
 
-        return newpos;
+        List<Vector2> resultVectors = vectors;
+
+        for (int i = 0; i < vectors.Count; i++)
+        {
+            var charIndex = characterPosList.FindIndex(x => x == vectors[i]);
+            if (charIndex != -1)
+            {
+                var charData = characterList[charIndex];
+                if(effectTarget == CardEffectTarget.Enemy && charData.IsPlayerCharacter())
+                    resultVectors.Remove(vectors[i]);
+                else if (effectTarget == CardEffectTarget.Ally && !charData.IsPlayerCharacter())
+                    resultVectors.Remove(vectors[i]);
+                else if(effectTarget == CardEffectTarget.Ground)
+                    resultVectors.Remove(vectors[i]);
+                else if(avoidCharacter)
+                    resultVectors.Remove(vectors[i]);
+            }
+            else
+            {
+                if (effectTarget== CardEffectTarget.Ally || effectTarget == CardEffectTarget.Enemy)
+                    resultVectors.Remove(vectors[i]);
+            }    
+        }
+
+
+        return resultVectors;
     }
     public void ShowCardEffectRange(Card card)
     {

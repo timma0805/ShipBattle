@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIBattleCardsPanel : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     [SerializeField]
     private GameObject showCardsContent;
+    private GridLayoutGroup cardsLayoutGroup;
     public RectTransform cardDragAreaRectTrans;
 
     [SerializeField]
@@ -42,11 +44,13 @@ public class UIBattleCardsPanel : MonoBehaviour
     private int cardAvailableSlot = 10;
     private int drawInitCardAvailableCount = 5;
     private int drawCardAvailableCount = 3;
+    private int redrawUsedCardsCount = 0;
 
     // Start is called before the first frame update
     void Awake()
     {
         uiCamera = BattleGameCoreController.Instance.GetUICamera();
+        cardsLayoutGroup = showCardsContent.GetComponent<GridLayoutGroup>();
     }
 
     // Update is called once per frame
@@ -106,7 +110,8 @@ public class UIBattleCardsPanel : MonoBehaviour
         }
         usedCardList = new List<Card>();
         discardCardList = new List<Card>();
-        currentCardList = new List<Card>();  
+        currentCardList = new List<Card>();
+        redrawUsedCardsCount = 0;
     }
 
     private List<T> ShuffleGOList<T>(List<T> inputList)
@@ -163,6 +168,7 @@ public class UIBattleCardsPanel : MonoBehaviour
             if(cardStackList.Count == 0)
             {
                 Debug.Log("cardStackList Empty, Refresh");
+                redrawUsedCardsCount++;
                 cardStackList = ShuffleGOList(usedCardList);
                 usedCardList = new List<Card>();
             }
@@ -195,10 +201,13 @@ public class UIBattleCardsPanel : MonoBehaviour
         if (cardList.Count < currentCardList.Count) //need init new card prefab
         {
             Debug.Log("need init new card prefab");
-            currentCard = GameObject.Instantiate(cardPrefab, showCardsContent.transform).GetComponent<UIBattleCard>();
+            currentCard = Instantiate(cardPrefab, showCardsContent.transform).GetComponent<UIBattleCard>();
             currentCard.ApplyCamera(uiCamera);
             currentCard.CreateCard(this, card);
             cardList.Add(currentCard);
+
+            if (cardList.Count > 5)
+                cardsLayoutGroup.spacing = new Vector2(cardsLayoutGroup.spacing.x - 10, cardsLayoutGroup.spacing.y);
         }
         else //update card content
         {
@@ -235,10 +244,14 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     private async Task UseCard(Card targetCard)
     {
+        int index = currentCardList.FindIndex(x => x == targetCard);
+        cardList[index].Unvisible();
         //Check can use or not
         if (!await battleController.UsePlayerCard(targetCard))
         {
             Debug.Log("UsePlayerCard return false");
+            cardList[index].ShowCard();
+            cardList[index].ShakeAnimation();
             return;
         }
 
@@ -246,7 +259,6 @@ public class UIBattleCardsPanel : MonoBehaviour
         if(!targetCard.data.Temp)
             usedCardList.Add(targetCard);
 
-        int index = currentCardList.FindIndex(x => x == targetCard);
         currentCardList.RemoveAt(index);
         UIBattleCard usedCard = cardList[index];
         usedCard.Unvisible();

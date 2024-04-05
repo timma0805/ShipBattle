@@ -81,6 +81,7 @@ public enum CardEffectTarget
 public enum CardEffectType
 {
     No,
+    Attack,
     HP,
     MP,
     Move,

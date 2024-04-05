@@ -39,6 +39,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     public GameObject characterObj { get; private set; }
     private Animator characterAnimator;
     private bool isSelecting = false;
+    private bool isSelectingArea = false;
 
     //Setting
     const float scaleSize = 100.0f;
@@ -96,7 +97,13 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         return newCharacter;
     }
 
-    public async Task<bool> MoveCharacterToSlot(GameObject newCharacter, bool isPlayer)
+    public void HideInformation()
+    {
+        hpTxt.text = string.Empty;
+        cdTxt.text = string.Empty;
+    }
+
+    public async Task<bool> MoveCharacterToSlot(GameObject newCharacter, bool isPlayer, CharacterData characterData)
     {
         if(characterObj != null)
         {
@@ -133,6 +140,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         ));
         await tcs.Task;
 
+        UpdateHP(characterData.CurHP);
         PlayCharacterAnimation(CharacterAnimationEnum.idle);
         await Task.Delay(100);
 
@@ -250,7 +258,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
 
         if (isSelecting)
         {
-            selectBtn.gameObject.SetActive(false);
+            selectBtn.gameObject.SetActive(isSelectingArea);
         }
     }
 
@@ -268,6 +276,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     {
         characterObj = null;
         characterAnimator = null;
+        HideInformation();
     }
 
     public void UpdateHP(int hp)
@@ -279,22 +288,23 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         cdTxt.text = "CD: " + cd.ToString();
     }
 
-    public void ShowEffectArea(bool needSelect)
+    public void ShowEffectArea(bool needSelect, bool isAreaEffect)
     {
         isSelecting = needSelect;
+        isSelectingArea = isAreaEffect;
+        selectBtn.gameObject.SetActive(isAreaEffect);
         groundImg.color = Color.red;
     }
 
     public void Reset()
     {
         isSelecting = false;
+        isSelectingArea = false;
         groundImg.color = Color.white;
         selectBtn.gameObject.SetActive(false);
 
         if (characterObj == null)
-        {
-            hpTxt.text = "";
-            cdTxt.text = "";
-        }
+            HideInformation();
+        
     }
 }

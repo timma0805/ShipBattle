@@ -17,6 +17,7 @@ public class CardData
     public FaceDirection Direction;
     public int Distance;
     public bool IsAreaEffect;
+    public bool IsAreaTriggerAfterDIstance;
     public int Success;
     public CardType? Type2;
     public CardEffectType? Effect2;
@@ -25,6 +26,7 @@ public class CardData
     public FaceDirection? Direction2;
     public int? Distance2;
     public bool? IsAreaEffect2;
+    public bool? IsAreaTriggerAfterDIstance2;
     public int? Success2;
     public bool Temp = false;
     public CardData() { }
@@ -38,12 +40,13 @@ public class CardData
         Level = 0;
         Cost = 0;
         isExhaust = false;
-        Effect = CardEffectType.Posion;
+        Effect = CardEffectType.Move;
         Target = CardEffectTarget.Self;
         Value = 1;
         Direction = FaceDirection.All;
         Distance = 1;
         IsAreaEffect = false;
+        IsAreaTriggerAfterDIstance = false;
         Success = 100;
         Temp = true;
     }

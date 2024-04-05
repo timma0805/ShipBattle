@@ -18,12 +18,12 @@ public class Card
             data = _data;
             effectList = new List<CardEffect>();
 
-            CardEffect effect = new CardEffect(_data.Target, _data.Effect, _data.Value, _data.Distance, _data.Direction, _data.Success, _data.IsAreaEffect);
+            CardEffect effect = new CardEffect(_data.Target, _data.Effect, _data.Value, _data.Distance, _data.Direction, _data.Success, _data.IsAreaEffect, _data.IsAreaTriggerAfterDIstance);
             effectList.Add(effect);
 
             if (_data.Target2 != null)
             {
-                CardEffect effect2 = new CardEffect(_data.Target2.Value, _data.Effect2.Value, _data.Value2.Value, _data.Distance2.Value, _data.Direction2.Value, _data.Success2.Value, _data.IsAreaEffect2.Value);
+                CardEffect effect2 = new CardEffect(_data.Target2.Value, _data.Effect2.Value, _data.Value2.Value, _data.Distance2.Value, _data.Direction2.Value, _data.Success2.Value, _data.IsAreaEffect2.Value, _data.IsAreaTriggerAfterDIstance2.Value);
                 effectList.Add(effect2);
             }
         }

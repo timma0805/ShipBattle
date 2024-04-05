@@ -52,7 +52,10 @@ public class BattleEnemy : ITargetObject
     public int BeHealed(int value)
     {
         enemyData.CurHP += value;
-        Debug.Log("enemyData.HP" + enemyData.CurHP);
+        if (enemyData.CurHP > enemyData.HP)
+            enemyData.CurHP = enemyData.HP;
+
+        Debug.Log("enemyData.CurHP" + enemyData.CurHP);
 
         return enemyData.CurHP;
     }

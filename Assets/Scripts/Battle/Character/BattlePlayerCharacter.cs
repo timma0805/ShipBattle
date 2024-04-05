@@ -48,14 +48,17 @@ public class BattlePlayerCharacter : ITargetObject
     public int BeHealed(int value)
     {
         characterData.CurHP += value;
-        Debug.Log("playerData.HP" + characterData.CurHP);
+        if (characterData.CurHP > characterData.HP)
+            characterData.CurHP = characterData.HP;
+
+            Debug.Log("playerData.CurHP" + characterData.CurHP);
 
         return characterData.CurHP;
     }
 
     public void StartTurn()
     {
-        Debug.Log($"StartTurn: HP {characterData.CurHP}");
+        Debug.Log($"StartTurn: CurHP {characterData.CurHP}");
 
         //recovery
         //Gain HP and MP when Start

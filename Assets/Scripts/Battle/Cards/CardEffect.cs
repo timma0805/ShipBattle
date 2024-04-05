@@ -10,10 +10,11 @@ public class CardEffect
     public FaceDirection direction { get; private set; }
     public float successPercentage { get; private set; }
     public bool isAreaEffect { get; private set; }
-    
+    public bool IsAreaTriggerAfterDIstance { get; private set; }
+
     public CardEffect() { }
 
-    public CardEffect(CardEffectTarget _effectTarget, CardEffectType _effectProperty, float _effectValue, int _distance, FaceDirection _direction, int _successPercentage, bool _isAreaEffect)
+    public CardEffect(CardEffectTarget _effectTarget, CardEffectType _effectProperty, float _effectValue, int _distance, FaceDirection _direction, int _successPercentage, bool _isAreaEffect, bool isAreaTriggerAfterDIstance)
     {
         effectTarget = _effectTarget;
         effectProperty = _effectProperty;
@@ -24,6 +25,7 @@ public class CardEffect
 
         successPercentage = _successPercentage;
         isAreaEffect = _isAreaEffect;
+        IsAreaTriggerAfterDIstance = isAreaTriggerAfterDIstance;
     }
 
 

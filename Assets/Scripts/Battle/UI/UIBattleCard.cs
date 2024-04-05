@@ -63,7 +63,6 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     protected override void Update()
     {
         base.Update();
-
     }
 
     public void CreateCard(UIBattleCardsPanel _cardPanel, Card card)
@@ -127,28 +126,22 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
         cardPanel.TryToUseCard(cardData);
     }
 
-    public void CheckCanUseOrNot()
+    public void ShakeAnimation()
     {
-        canDragging = cardPanel.CheckCardCondition(cardData);
-        Debug.Log("canDragging: " + canDragging);
-        if (!canDragging)
-        {
-            if(shakeCoroutine == null)
-                shakeCoroutine = StartCoroutine(ShakeAnimation());
-        }
-
+        if (shakeCoroutine == null)
+            shakeCoroutine = StartCoroutine(ShakeAnimationIE());
     }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        CheckCanUseOrNot();
+        canDragging = true;
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
     }
 
-    public IEnumerator ShakeAnimation()
+    public IEnumerator ShakeAnimationIE()
     {
         float elapsedTime = 0f;
 

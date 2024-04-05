@@ -69,7 +69,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
         }
     }
 
-    public async Task<bool> MoveCharacter(Vector2 pos, Vector2 newpos)
+    public async Task<bool> MoveCharacter(Vector2 pos, Vector2 newpos, CharacterData characterData)
     {
         int slotID = ConvertPosToSlotID(pos);
         int targetSlotID = ConvertPosToSlotID(newpos);
@@ -82,8 +82,8 @@ public class UIBattleCharacterPanel : MonoBehaviour
             Debug.Log("targetSlot null Can't Move");
             return false;
         }
-
-        bool isSuccess = await targetSlot.MoveCharacterToSlot(orginSlot.characterObj, orginSlot.isPlayerCharacter);
+        orginSlot.HideInformation();
+        bool isSuccess = await targetSlot.MoveCharacterToSlot(orginSlot.characterObj, orginSlot.isPlayerCharacter, characterData);
         if (!isSuccess) 
             return false;
 
@@ -121,11 +121,42 @@ public class UIBattleCharacterPanel : MonoBehaviour
         PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.die);
     }
 
-    public async Task Attack(Vector2 pos, Vector2 targetPos)
+    private void CharacterHeal(Vector2 pos)
     {
-        CharacterAttack(pos);
-        await Task.Delay(200);
+        int slotID = ConvertPosToSlotID(pos);
+        if (slotID < 0 || slotID >= characterSlotsList.Count)
+            return;
+
+        UIBattleCharacterSlot targetSlot = characterSlotsList.Find(x => x.slotid == slotID);
+        PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.casting);
+    }
+
+    private void CharacterBeHeal(Vector2 pos)
+    {
+        int slotID = ConvertPosToSlotID(pos);
+        if (slotID < 0 || slotID >= characterSlotsList.Count)
+            return;
+
+        UIBattleCharacterSlot targetSlot = characterSlotsList.Find(x => x.slotid == slotID);
+        PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.idle);
+    }
+
+    public async Task Attack(Vector2 pos, Vector2 targetPos, bool needAttackAnimation)
+    {
+        if (needAttackAnimation)
+        {
+            CharacterAttack(pos);
+            await Task.Delay(200);
+        }
+
         CharacterHurt(targetPos);
+    }
+
+    public async Task Heal(Vector2 pos, Vector2 targetPos)
+    {
+        CharacterHeal(pos);
+        await Task.Delay(200);
+        CharacterBeHeal(targetPos);
     }
 
     public void Victory()
@@ -176,7 +207,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
         return new Vector2(slotID % maxSlotPerRow, slotID / maxSlotPerRow);
     }
 
-    public async Task<Vector2> ShowEffectArea(List<Vector2> vectors, bool needSelect)
+    public async Task<Vector2> ShowEffectArea(List<Vector2> vectors, bool needSelect, bool isAreaEffect)
     {
         try
         {
@@ -184,7 +215,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
             {
                 int slotID = ConvertPosToSlotID(vectors[i]);
                 if(slotID >= 0 && slotID < characterSlotsList.Count)
-                    characterSlotsList[slotID].ShowEffectArea(needSelect);
+                    characterSlotsList[slotID].ShowEffectArea(needSelect, isAreaEffect);
             }
 
             if (needSelect)
