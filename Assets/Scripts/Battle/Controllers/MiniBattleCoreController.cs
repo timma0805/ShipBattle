@@ -230,6 +230,8 @@ public class MiniBattleCoreController : MonoBehaviour
                     if (skillData.Type == CardType.Attack)
                     {
                         Vector2 newpos = FindEnemySkillBestPos(skillData, pos, characterList[i].GetFaceDirection());
+                        if (newpos == pos)  //avoid attack himself
+                            continue;
                         await uiCharacterPanel.Attack(pos, newpos, true);
                         ITargetObject target = null;
                         int index = characterPosList.FindIndex(x => x == newpos);
