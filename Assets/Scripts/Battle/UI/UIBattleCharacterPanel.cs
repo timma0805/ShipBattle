@@ -89,7 +89,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
         if (!isSuccess) 
             return false;
 
-        orginSlot.RemoveCharacter();
+        orginSlot.RemoveCharacter(false);
         return true;
     }
 
@@ -113,17 +113,22 @@ public class UIBattleCharacterPanel : MonoBehaviour
         PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.hurt);
     }
 
-    private void CharacterDie(Vector2 pos)
+    public async Task CharacterDie(Vector2 pos)
     {
         int slotID = ConvertPosToSlotID(pos);
         if (slotID < 0 || slotID >= characterSlotsList.Count)
+        {
+            Debug.LogError("CharacterDie SlotID error");
             return;
+        }
 
         UIBattleCharacterSlot targetSlot = characterSlotsList.Find(x => x.slotid == slotID);
         PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.die);
+        await Task.Delay(1000);
+        characterSlotsList[slotID].RemoveCharacter(true);
     }
 
-    private void CharacterHeal(Vector2 pos)
+    public void CharacterHeal(Vector2 pos)
     {
         int slotID = ConvertPosToSlotID(pos);
         if (slotID < 0 || slotID >= characterSlotsList.Count)
@@ -161,7 +166,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
         CharacterBeHeal(targetPos);
     }
 
-    public void Victory()
+    public async Task Victory()
     {
         for (int i = 0; i < characterSlotsList.Count; i++)
         {
@@ -170,9 +175,11 @@ public class UIBattleCharacterPanel : MonoBehaviour
                 PlayCharacterAnimation(characterSlotsList[i], UIBattleCharacterSlot.CharacterAnimationEnum.victory);
             }
         }
+
+        await Task.Delay(1000);
     }
 
-    public void Lose()
+    public async Task Lose()
     {
         for (int i = 0; i < characterSlotsList.Count; i++)
         {
@@ -181,9 +188,11 @@ public class UIBattleCharacterPanel : MonoBehaviour
                 PlayCharacterAnimation(characterSlotsList[i], UIBattleCharacterSlot.CharacterAnimationEnum.victory);
             }
         }
+
+        await Task.Delay(1000);
     }
 
-    public void UpdateHP(Vector2 pos, int hp)
+    public async Task UpdateHP(Vector2 pos, int hp)
     {
         int slotID = ConvertPosToSlotID(pos);
         if (slotID < 0 || slotID >= characterSlotsList.Count)

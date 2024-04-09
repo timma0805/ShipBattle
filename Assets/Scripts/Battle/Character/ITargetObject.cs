@@ -10,6 +10,9 @@ public interface ITargetObject
     void BeTarget();
 
     bool IsPlayerCharacter();
+    bool IsDead();
+    bool IsRemoved();
+    void RemoveFromBattle();
 
     FaceDirection GetFaceDirection();
 

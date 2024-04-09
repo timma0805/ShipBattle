@@ -39,7 +39,8 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     private MiniBattleCoreController battleController;
     private List<Card> baseMoveCardList;
-  
+    private bool isProcessingCard = false;
+
     //Setting
     private int cardAvailableSlot = 10;
     private int drawInitCardAvailableCount = 5;
@@ -223,6 +224,18 @@ public class UIBattleCardsPanel : MonoBehaviour
         discardCardList.Add(card);
     }
 
+    public void RemoveCardsWithCharacterDie(CharacterData characterData)
+    {
+        cardStackList.RemoveAll(x => x.data.Occupation == characterData.Name);
+        currentCardList.RemoveAll(x => x.data.Occupation == characterData.Name);
+        baseMoveCardList.RemoveAll(x => x.data.Occupation == characterData.Name);
+        var cards = cardList.FindAll(x => x.cardData.data.Occupation == characterData.Name);
+        foreach ( var card in cards )
+        {
+            card.Unvisible();
+        }
+    }
+
     public void EndPlayerTurn()
     {
         //Move current cards to used cards
@@ -244,6 +257,10 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     private async Task UseCard(Card targetCard)
     {
+        if (isProcessingCard)
+            return;
+
+        isProcessingCard = true;
         int index = currentCardList.FindIndex(x => x == targetCard);
         cardList[index].Unvisible();
         //Check can use or not
@@ -252,11 +269,12 @@ public class UIBattleCardsPanel : MonoBehaviour
             Debug.Log("UsePlayerCard return false");
             cardList[index].ShowCard();
             cardList[index].ShakeAnimation();
+            isProcessingCard = false;
             return;
         }
 
         //Move to discard or used list
-        if(!targetCard.data.Temp)
+        if (!targetCard.data.Temp)
             usedCardList.Add(targetCard);
 
         currentCardList.RemoveAt(index);
@@ -266,6 +284,8 @@ public class UIBattleCardsPanel : MonoBehaviour
         cardList.Add(usedCard);
 
         UpdateCardCount();
+
+        isProcessingCard = false;
     }
 
     public void TryToUseCard(Card card)
@@ -275,7 +295,7 @@ public class UIBattleCardsPanel : MonoBehaviour
         if (!CheckMouseInDragArea())
             return;
 
-        UseCard(card);
+         UseCard(card);
     }
 
     private bool CheckMouseInDragArea()

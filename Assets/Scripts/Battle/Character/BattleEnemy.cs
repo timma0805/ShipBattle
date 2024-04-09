@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Playables;
 
 public class BattleEnemy : ITargetObject
 {
@@ -92,7 +93,7 @@ public class BattleEnemy : ITargetObject
         enemyData.CurHP -= value;
         Debug.Log("enemyData.HP" + enemyData.CurHP);
 
-        if (enemyData.HP <= 0)
+        if (enemyData.CurHP <= 0)
             enemyState = CharacterState.Dead;
 
         return enemyData.CurHP;
@@ -119,7 +120,17 @@ public class BattleEnemy : ITargetObject
         if (enemyState == CharacterState.Dead)
             return true;
 
-        return enemyData.HP <= 0;
+        return enemyData.CurHP <= 0;
+    }
+
+    public bool IsRemoved()
+    {
+        return enemyState == CharacterState.Removed;
+    }
+
+    public void RemoveFromBattle()
+    {
+        enemyState = CharacterState.Removed;
     }
 
     public bool IsPlayerCharacter()

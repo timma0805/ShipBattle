@@ -102,7 +102,7 @@ public class BattleGameCoreController : MonoBehaviour
         miniBattleController = Instantiate(miniBattlePrefab).GetComponent<MiniBattleCoreController>();
         miniBattleController.GetComponent<Canvas>().worldCamera = uiCamera;
         miniBattleController.Init(() => {
-            LoadBattleStage(BattleStage.EndEvent);
+            LoadBattleStage(BattleStage.EndBattle);
         });
         miniBattleController.gameObject.SetActive(false);
     }

@@ -272,8 +272,12 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         onMouseExit();
     }
 
-    public void RemoveCharacter()
+    public void RemoveCharacter(bool disableCharacter)
     {
+        if(disableCharacter && characterObj != null)
+        {
+            characterObj.SetActive(false);
+        }
         characterObj = null;
         characterAnimator = null;
         HideInformation();

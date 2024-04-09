@@ -29,7 +29,9 @@ public class BattlePlayerCharacter : ITargetObject
     {
         Debug.Log("BattlePlayer BeAttacked" + value);
         characterData.CurHP -= value;
-        Debug.Log("playerData.HP" + characterData.CurHP);
+        Debug.Log("playerData.CurHP" + characterData.CurHP);
+        if(characterData.CurHP <= 0 )
+            playerState = CharacterState.Dead;
 
         return characterData.CurHP;
     }
@@ -83,5 +85,23 @@ public class BattlePlayerCharacter : ITargetObject
     public FaceDirection GetFaceDirection()
     {
         return currentDirection;
+    }
+
+    public bool IsDead()
+    {
+        if (playerState == CharacterState.Dead)
+            return true;
+
+        return characterData.CurHP <= 0;
+    }
+
+    public bool IsRemoved()
+    {
+        return playerState == CharacterState.Removed;
+    }
+
+    public void RemoveFromBattle()
+    {
+        playerState = CharacterState.Removed;
     }
 }

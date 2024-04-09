@@ -57,6 +57,7 @@ public class MiniBattleCoreController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+
     }
 
     public void Init(Action callback )
@@ -186,7 +187,14 @@ public class MiniBattleCoreController : MonoBehaviour
 
         uIBattleCardsPanel.UpdateMP(currentMP, maxMP);
 
-        if(currentMP == 0)
+        bool isAllDead = await CheckAllCharacterDie();
+        if (isAllDead)
+        {
+            RunStage(BattleStage.EndGame);
+            return true;
+        }
+
+        if (currentMP == 0)
             await EndPlayerTurn();
 
         return true;
@@ -200,7 +208,12 @@ public class MiniBattleCoreController : MonoBehaviour
     private async Task EndPlayerTurn()
     {
         uIBattleCardsPanel.EndPlayerTurn();
-        RunStage(BattleStage.EnemyTurn);
+
+        bool isAllDead = await CheckAllCharacterDie();
+        if (isAllDead)
+            RunStage(BattleStage.EndGame);
+        else
+            RunStage(BattleStage.EnemyTurn);
     }
 
     private async Task EnemyTurn()
@@ -242,7 +255,7 @@ public class MiniBattleCoreController : MonoBehaviour
                         if (target != null)
                         {
                             int hp = target.BeAttacked((int)(skillData.Value * characterList[i].GetCharacterData().Attack));
-                            uiCharacterPanel.UpdateHP(newpos, hp);
+                            await uiCharacterPanel.UpdateHP(newpos, hp);
                         }
                     }
                     else if (skillData.Type == CardType.Move)
@@ -259,12 +272,19 @@ public class MiniBattleCoreController : MonoBehaviour
 
                         await uiCharacterPanel.Heal(pos, newpos);
                         int hp = characterList[i].BeHealed((int)skillData.Value);
-                        uiCharacterPanel.UpdateHP(pos, hp);
-                    }
+                        await uiCharacterPanel.UpdateHP(pos, hp);
+                    }                 
                 }
                 else
                 {
                     uiCharacterPanel.UpdateCountdown(pos, enemy.Countdown);
+                }
+
+                bool isAllDead = await CheckAllCharacterDie();
+                if (isAllDead)
+                {
+                    RunStage(BattleStage.EndGame);
+                    return;
                 }
             }
 
@@ -428,7 +448,7 @@ public class MiniBattleCoreController : MonoBehaviour
                 }
             }
 
-            targetpos = pos;    //no avaliable posistion
+            targetpos = pos;    //no available position
         }
 
         return targetpos;
@@ -444,13 +464,63 @@ public class MiniBattleCoreController : MonoBehaviour
             }
         }
 
-        RunStage(BattleStage.PlayerTurn);
+        bool isAllDead = await CheckAllCharacterDie();
+        if (isAllDead)
+            RunStage(BattleStage.EndGame);
+        else
+            RunStage(BattleStage.PlayerTurn);
+    }
+
+    private async Task<bool> CheckAllCharacterDie()
+    {
+        bool isAllPlayerDead = true;
+        bool isAllEnemyDead = true;
+        for (int i = 0; i < characterList.Count; i++)
+        {
+            if (characterList[i].IsDead() && !characterList[i].IsRemoved()) //just dead
+            {
+                Debug.Log($"Character{characterList[i].GetCharacterData().Name} just dead");
+                await uiCharacterPanel.CharacterDie(characterPosList[i]);
+                characterPosList[i] = new Vector2(-1, -1);
+                characterList[i].RemoveFromBattle();
+
+                if (characterList[i].IsPlayerCharacter())   //need to remove related cards from stack
+                {
+                    uIBattleCardsPanel.RemoveCardsWithCharacterDie(characterList[i].GetCharacterData());
+                }
+            }
+            else if (!characterList[i].IsDead() && characterList[i].IsPlayerCharacter())
+                isAllPlayerDead = false;
+            else if (!characterList[i].IsDead() && !characterList[i].IsPlayerCharacter())
+                isAllEnemyDead = false;
+        }
+
+        return isAllEnemyDead || isAllPlayerDead;
     }
 
     private async Task EndGame()
     {
         Debug.Log("EndGame");
-        if(finishBattleCallback != null)
+        bool isPlayerAllDead = true;
+        for (int i = 0; i < characterList.Count; i++)
+        {
+            if (!characterList[i].IsDead() && characterList[i].IsPlayerCharacter())
+            {
+                isPlayerAllDead = false;
+                break;
+            }
+        }
+
+        if (isPlayerAllDead)
+        {
+            await uiCharacterPanel.Lose();
+        }
+        else
+        {
+            await uiCharacterPanel.Victory();
+        }
+
+        if (finishBattleCallback != null)
             finishBattleCallback();
     }
 
@@ -499,7 +569,7 @@ public class MiniBattleCoreController : MonoBehaviour
                     {
                         Vector2 newpos = await GetTargetPos(pos, effect, character);
                         if (newpos == pos)
-                            return false;
+                            return i > 0;
 
                         List<Vector2> effectPosList = GetEffectArea(newpos, effect.distance, effect.direction, character.GetFaceDirection(), effect.effectTarget, false);
                         effectPosList.Add(pos);
@@ -523,7 +593,7 @@ public class MiniBattleCoreController : MonoBehaviour
                 {
                     Vector2 newpos = await GetTargetPos(pos, effect, character);
                     if (newpos == pos)
-                        return false;
+                        return i > 0;
 
                     await ProcessAttack(effect, pos, newpos, attackValue, true);
                 }
@@ -534,22 +604,22 @@ public class MiniBattleCoreController : MonoBehaviour
                 {
                     Vector2 newpos = await GetTargetPos(pos, effect, character);
                     if (newpos == pos)
-                        return false;
+                        return i > 0;
 
                     bool isSucess = await uiCharacterPanel.MoveCharacter(pos, newpos, character.GetCharacterData());
                     if (isSucess)
                         characterPosList[characterIndex] = newpos;
                     else
-                        return false;
+                        return i > 0;
                 }
                 else
                 {
                     Vector2 targetPos = await GetTargetPos(pos, effect, character);
                     if (targetPos == pos)
-                        return false;
+                        return i > 0;
                     Vector2 newpos = await GetTargetPos(targetPos, effect, character);
                     if (newpos == pos)
-                        return false;
+                        return i > 0;
 
                     ITargetObject target = null;
                     int index = characterPosList.FindIndex(x => x == targetPos);
@@ -563,10 +633,10 @@ public class MiniBattleCoreController : MonoBehaviour
                         if (isSucess)
                             characterPosList[index] = newpos;
                         else
-                            return false;
+                            return i > 0;
                     }
                     else
-                        return false;
+                        return i > 0;
                 }
             }
             else if (effect.effectProperty == CardEffectType.HP)
@@ -577,7 +647,7 @@ public class MiniBattleCoreController : MonoBehaviour
                 {
                     newpos = await GetTargetPos(pos, effect, character);
                     if(newpos == pos)
-                        return false;
+                        return i > 0;
                 }
                 else
                     newpos = await uiCharacterPanel.ShowEffectArea(new List<Vector2> { pos }, true, effect.isAreaEffect);
@@ -593,9 +663,8 @@ public class MiniBattleCoreController : MonoBehaviour
                 if (target != null)
                 {
                     int hp = target.BeHealed((int)effect.effectValue);
-                    uiCharacterPanel.UpdateHP(newpos, hp);
+                    await uiCharacterPanel.UpdateHP(newpos, hp);
                 }
-
             }
         }
 
@@ -617,7 +686,7 @@ public class MiniBattleCoreController : MonoBehaviour
         if (target != null)
         {
             int hp = target.BeAttacked(attackValue);
-            uiCharacterPanel.UpdateHP(newpos, hp);
+            await uiCharacterPanel.UpdateHP(newpos, hp); 
         }
     }
 

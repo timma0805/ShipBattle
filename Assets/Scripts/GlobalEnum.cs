@@ -139,7 +139,8 @@ public enum BattleStage
         Prepare,
         Attack,
         AfterAttack,
-        Dead
+        Dead,
+        Removed
     }
 
     public enum CharacterStatus

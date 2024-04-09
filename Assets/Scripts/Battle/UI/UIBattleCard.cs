@@ -31,7 +31,7 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     private LayoutElement layoutElement;
     private Button button;
 
-    private Card cardData;
+    public Card cardData { get; private set; }
     private UIBattleCardsPanel cardPanel;
     private RectTransform rectTransform;
     private Quaternion originalRotation;
