@@ -285,7 +285,11 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     }
 
     public void UpdateCountdown(int cd) { 
-        cdTxt.text = "CD: " + cd.ToString();
+
+        if(cd > 0) 
+            cdTxt.text = "CD: " + cd.ToString();
+        else
+            cdTxt.text = string.Empty;
     }
 
     public void ShowEffectArea(bool needSelect, bool isAreaEffect)

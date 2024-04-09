@@ -71,6 +71,8 @@ public class UIBattleCharacterPanel : MonoBehaviour
 
     public async Task<bool> MoveCharacter(Vector2 pos, Vector2 newpos, CharacterData characterData)
     {
+        if(pos == newpos) return false;
+
         int slotID = ConvertPosToSlotID(pos);
         int targetSlotID = ConvertPosToSlotID(newpos);
 
@@ -188,6 +190,15 @@ public class UIBattleCharacterPanel : MonoBehaviour
             return;
 
         characterSlotsList[slotID].UpdateHP(hp);
+    }
+
+    public void UpdateCountdown(Vector2 pos, int coundown)
+    {
+        int slotID = ConvertPosToSlotID(pos);
+        if (slotID < 0 || slotID >= characterSlotsList.Count)
+            return;
+
+        characterSlotsList[slotID].UpdateCountdown(coundown);
     }
 
     private void PlayCharacterAnimation(UIBattleCharacterSlot targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum characterAnimationEnum)

@@ -8,6 +8,7 @@ using UnityEngine;
 using static UnityEditor.PlayerSettings;
 using UnityEngine.TextCore.Text;
 using static JsonManager;
+using static UnityEngine.GraphicsBuffer;
 
 public class MiniBattleCoreController : MonoBehaviour
 {
@@ -81,7 +82,7 @@ public class MiniBattleCoreController : MonoBehaviour
         previousStage = currentStage;
         currentStage = nextStage;
 
-        switch (currentStage)
+        switch (nextStage)
         {
             case BattleStage.Init:
                 InitBattle();
@@ -204,19 +205,245 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task EnemyTurn()
     {
-        DoEnemyAction();
+        await DoEnemyAction();
     }
 
-   public void DoEnemyAction()
+   public async Task DoEnemyAction()
     {
-        EndEnemyTurn();
+        try
+        {
+            for (int i = 0; i < characterList.Count; i++)
+            {
+                if (characterList[i].IsPlayerCharacter())
+                    continue;
+
+                BattleEnemy enemy = characterList[i] as BattleEnemy;
+
+                if (enemy.IsDead())
+                    continue;
+
+                Vector2 pos = characterPosList[i];
+                EnemySkillData skillData = await enemy.DoAction();
+
+                if (skillData != null)
+                {
+                    if (skillData.Type == CardType.Attack)
+                    {
+                        Vector2 newpos = FindEnemySkillBestPos(skillData, pos, characterList[i].GetFaceDirection());
+                        await uiCharacterPanel.Attack(pos, newpos, true);
+                        ITargetObject target = null;
+                        int index = characterPosList.FindIndex(x => x == newpos);
+
+                        if (index != -1)
+                            target = characterList[index];
+
+                        if (target != null)
+                        {
+                            int hp = target.BeAttacked((int)(skillData.Value * characterList[i].GetCharacterData().Attack));
+                            uiCharacterPanel.UpdateHP(newpos, hp);
+                        }
+                    }
+                    else if (skillData.Type == CardType.Move)
+                    {
+                        Vector2 newpos = FindEnemySkillBestPos(skillData, pos, characterList[i].GetFaceDirection());
+                        characterPosList[i] = newpos;
+                        bool isSuccess = await uiCharacterPanel.MoveCharacter(pos, newpos, characterList[i].GetCharacterData());
+                    }
+                    else if (skillData.Type == CardType.Heal)
+                    {
+                        Vector2 newpos = Vector2.zero;
+                        if (skillData.Target == EnemyActionTarget.Self)
+                            newpos = pos;
+
+                        await uiCharacterPanel.Heal(pos, newpos);
+                        int hp = characterList[i].BeHealed((int)skillData.Value);
+                        uiCharacterPanel.UpdateHP(pos, hp);
+                    }
+                }
+                else
+                {
+                    uiCharacterPanel.UpdateCountdown(pos, enemy.Countdown);
+                }
+            }
+
+            EndEnemyTurn();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+
+    }
+
+    private Vector2 FindEnemySkillBestPos(EnemySkillData skill, Vector2 pos, FaceDirection faceDirection)
+    {
+        Vector2 targetpos = pos;
+        float compareValue = -1;
+
+        if (skill.Target == EnemyActionTarget.Self)
+            return pos;
+
+        List<Vector2> effectPosList = new List<Vector2>();
+
+        if(skill.Type == CardType.Move)
+            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Any, false);
+        else if (skill.Type == CardType.Heal)
+            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Enemy, false);
+        else
+            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Ally, false);
+
+        int characterIndex = -1;
+        for (int i = 0; i < effectPosList.Count; i++)
+        {
+            characterIndex = characterPosList.FindIndex(x => x == effectPosList[i]);
+            if (characterIndex == -1)
+                continue;
+
+            var data = characterList[characterIndex].GetCharacterData();
+
+            if (data != null && characterList[characterIndex].IsPlayerCharacter())
+            {
+                if (compareValue == -1 )
+                {
+                    if(skill.Target == EnemyActionTarget.Lowest || skill.Target == EnemyActionTarget.Hightest)
+                        compareValue = data.CurHP;
+                    else if (skill.Target == EnemyActionTarget.Nearest || skill.Target == EnemyActionTarget.Farest)
+                        compareValue = Vector2.Distance(pos, effectPosList[i]);
+
+                    targetpos = effectPosList[i];
+                }
+                else
+                {
+                    if (skill.Target == EnemyActionTarget.Lowest && compareValue > data.CurHP)
+                    {
+                        compareValue = data.CurHP;
+                        targetpos = effectPosList[i];
+                    }
+                    else if (skill.Target == EnemyActionTarget.Hightest && compareValue < data.CurHP)
+                    {
+                        compareValue = data.CurHP;
+                        targetpos = effectPosList[i];
+                    }
+                    else if (skill.Target == EnemyActionTarget.Nearest && compareValue < Vector2.Distance(pos, effectPosList[i]))
+                    {
+                        compareValue = Vector2.Distance(pos, effectPosList[i]);
+                        targetpos = effectPosList[i];
+                    }
+                    else if (skill.Target == EnemyActionTarget.Farest && compareValue > Vector2.Distance(pos, effectPosList[i]))
+                    {
+                        compareValue = Vector2.Distance(pos, effectPosList[i]);
+                        targetpos = effectPosList[i];
+                    }
+                }
+            }
+        }
+
+        if (skill.Type == CardType.Move)
+        {
+            if (characterIndex == -1)
+            {
+                if (skill.Target == EnemyActionTarget.Nearest)
+                {
+                    float distance = 99;
+                    for (int i = 0; i < characterPosList.Count; i++) {
+                        if (Vector2.Distance(characterPosList[i], pos) < distance && characterList[i].IsPlayerCharacter())
+                        {
+                            distance = Vector2.Distance(characterPosList[i], pos);
+                            characterIndex = i;
+                        }    
+                    }
+                }
+                else if (skill.Target == EnemyActionTarget.Farest)
+                {
+                    float distance = -1;
+                    for (int i = 0; i < characterPosList.Count; i++)
+                    {
+                        if (Vector2.Distance(characterPosList[i], pos) > distance && characterList[i].IsPlayerCharacter())
+                        {
+                            distance = Vector2.Distance(characterPosList[i], pos);
+                            characterIndex = i;
+                        }
+                    }
+                }
+                else if (skill.Target == EnemyActionTarget.Lowest)
+                {
+                    int hp = 9999;
+                    for (int i = 0; i < characterList.Count; i++)
+                    {
+                        if (characterList[i].GetCharacterData().CurHP < hp && characterList[i].IsPlayerCharacter())
+                        {
+                            hp = characterList[i].GetCharacterData().CurHP;
+                            characterIndex = i;
+                        }
+                    }
+                }
+                else if (skill.Target == EnemyActionTarget.Hightest)
+                {
+                    int hp = 0;
+                    for (int i = 0; i < characterList.Count; i++)
+                    {
+                        if (characterList[i].GetCharacterData().CurHP > hp && characterList[i].IsPlayerCharacter())
+                        {
+                            hp = characterList[i].GetCharacterData().CurHP;
+                            characterIndex = i;
+                        }
+                    }
+                }
+            }
+
+            targetpos = characterPosList[characterIndex];
+            if (targetpos.x > pos.x)
+            {
+                for (int i = (int)targetpos.x; i > pos.x; i--)
+                {
+                    if (characterPosList.FindIndex(x => x == new Vector2(i, targetpos.y)) == -1 && effectPosList.FindIndex(x => x == new Vector2(i, targetpos.y)) != -1)
+                        return new Vector2(i, targetpos.y);
+                }
+            }
+            else if (targetpos.x < pos.x)
+            {
+                for (int i = (int)targetpos.x; i < pos.x; i++)
+                {
+                    if (characterPosList.FindIndex(x => x == new Vector2(i, targetpos.y)) == -1 && effectPosList.FindIndex(x => x == new Vector2(i, targetpos.y)) != -1)
+                        return new Vector2(i, targetpos.y);
+                }
+            }
+            
+            if (targetpos.y > pos.y)
+            {
+                for (int i = (int)targetpos.y; i > pos.y; i--)
+                {
+                    if (characterPosList.FindIndex(x => x == new Vector2(targetpos.x, i)) == -1 && effectPosList.FindIndex(x => x == new Vector2(targetpos.x, i)) != -1)
+                        return new Vector2(targetpos.x, i);
+                }
+            }
+            else if (targetpos.y < pos.y)
+            {
+                for (int i = (int)targetpos.y; i < pos.y; i++)
+                {
+                    if (characterPosList.FindIndex(x => x == new Vector2(targetpos.x, i)) == -1 && effectPosList.FindIndex(x => x == new Vector2(targetpos.x, i)) != -1)
+                        return new Vector2(targetpos.x, i);
+                }
+            }
+
+            targetpos = pos;    //no avaliable posistion
+        }
+
+        return targetpos;
     }
 
     private async Task EndEnemyTurn()
-    {      
+    {
+        for (int i = 0; i < characterList.Count; i++)
+        {
+            if (characterList[i] is BattleEnemy)
+            {
+                ((BattleEnemy)characterList[i]).EndTurn();
+            }
+        }
+
         RunStage(BattleStage.PlayerTurn);
     }
-
 
     private async Task EndGame()
     {

@@ -109,7 +109,8 @@ public enum EnemyActionTarget
         Farest,
         Lowest,
         Hightest,
-        Captain
+        Captain,
+        Self
     }
 
 public enum ConditionCompare

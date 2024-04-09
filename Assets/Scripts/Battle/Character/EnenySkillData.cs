@@ -8,14 +8,14 @@ public class EnemySkillData
     public string Name;
     public CardType Type;
     public string Description;
-    public string Effect;
-    public string Target;
+    public CardEffectType Effect;
+    public EnemyActionTarget Target;
     public float Value;
-    public int Cooldown;
+    public int Countdown;
     public FaceDirection Direction;
     public int Distance;
     public bool IsAreaEffect;
-    public EffectTarget? ConditionTarget;
+    public CardEffectTarget? ConditionTarget;
     public CardEffectType? ConditionProperty;
     public ConditionCompare? ConditionCompare;
     public float? ConditionValue;

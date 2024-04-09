@@ -6,19 +6,11 @@ using UnityEngine;
 [Serializable] // Add this attribute to make the class serializable
 public class CardCondition
 {
-    public EffectTarget effectTarget;
+    public CardEffectTarget effectTarget;
     public ConditionValue conditionValue;
     public ConditionComapre conditionComapre;
     public ConditionCompareValueType conditionCompareValueType;
     public string conditionCompareValueStr;
-
-    public enum EffectTarget
-    {
-        Any,
-        Self,
-        Enemy,
-        Gound
-    }
 
     public enum ConditionValue
     {
@@ -46,7 +38,7 @@ public class CardCondition
 
     public CardCondition() { }
 
-    public CardCondition (EffectTarget _effectTarget, ConditionValue _conditionValue, ConditionComapre _conditionComapre, ConditionCompareValueType _conditionCompareValueType, string _conditionCompareValueStr)
+    public CardCondition (CardEffectTarget _effectTarget, ConditionValue _conditionValue, ConditionComapre _conditionComapre, ConditionCompareValueType _conditionCompareValueType, string _conditionCompareValueStr)
     {
         effectTarget = _effectTarget;
         conditionValue = _conditionValue;
