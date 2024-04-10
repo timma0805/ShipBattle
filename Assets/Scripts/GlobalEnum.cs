@@ -125,6 +125,7 @@ public enum ConditionCompare
 public enum BattleStage
     {
         InitRun,
+        Choosing,
         StartRun,
         StartEvent,
         EndEvent,

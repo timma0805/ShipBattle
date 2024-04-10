@@ -30,6 +30,7 @@ public class SpecialEventPanelUI : MonoBehaviour
     //=============================
     private Action nextAction;
     private bool waitToClick = false;
+    private Action closeCallback;
     // Start is called before the first frame update
     void Start()
     {
@@ -51,8 +52,9 @@ public class SpecialEventPanelUI : MonoBehaviour
         }
     }
 
-    public void ShowEventPanel()
+    public void ShowEventPanel(Action _closeCallback)
     {
+        closeCallback = _closeCallback;
         gameObject.SetActive(true);
     }
 
@@ -64,6 +66,10 @@ public class SpecialEventPanelUI : MonoBehaviour
     private async Task LeaveEventPanel()
     {
         await ShowMessage("Good bye");
+        if(closeCallback  != null)
+        {
+            closeCallback();
+        }
         HideEventPanel();
     }
 

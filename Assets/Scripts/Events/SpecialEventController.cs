@@ -53,7 +53,7 @@ public class SpecialEventController : MonoBehaviour
 
         }
 
-        panelUI.ShowEventPanel();
+        panelUI.ShowEventPanel(EndEvent);
 
     }
 
@@ -64,7 +64,7 @@ public class SpecialEventController : MonoBehaviour
 
         }
 
-        panelUI.ShowEventPanel();
+        panelUI.ShowEventPanel(EndEvent);
 
     }
 
@@ -75,7 +75,7 @@ public class SpecialEventController : MonoBehaviour
 
         }
 
-        panelUI.ShowEventPanel();
+        panelUI.ShowEventPanel(EndEvent);
 
     }
 

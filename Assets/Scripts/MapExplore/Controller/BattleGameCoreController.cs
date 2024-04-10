@@ -221,6 +221,7 @@ public class BattleGameCoreController : MonoBehaviour
     private async Task EndEvent()
     {
         eventController.gameObject.SetActive(false);
+        LoadBattleStage(BattleStage.Choosing);
     }
     private async Task StartVillage()
     {
@@ -229,6 +230,7 @@ public class BattleGameCoreController : MonoBehaviour
     private async Task EndVillage()
     {
         villageController.gameObject.SetActive(false);
+        LoadBattleStage(BattleStage.Choosing);
     }
 
     private async Task StartEnemyBattle()
@@ -238,6 +240,7 @@ public class BattleGameCoreController : MonoBehaviour
     private async Task EndEnemyBattle()
     {
         miniBattleController.gameObject.SetActive(false);
+        LoadBattleStage(BattleStage.Choosing);
     }
 
 
