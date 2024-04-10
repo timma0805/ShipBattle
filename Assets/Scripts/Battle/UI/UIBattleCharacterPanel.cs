@@ -56,7 +56,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
         Debug.Log("characterSlotsList Count:" + characterSlotsList.Count);
     }
 
-    public void StartBattle(List<ITargetObject> battleCharacters, List<Vector2> charactersPos)
+    public void StartBattle(List<BattleCharacter> battleCharacters, List<Vector2> charactersPos)
     {
 
         for (int i = 0;i < battleCharacters.Count;i++)
@@ -192,13 +192,22 @@ public class UIBattleCharacterPanel : MonoBehaviour
         await Task.Delay(1000);
     }
 
-    public async Task UpdateHP(Vector2 pos, int hp)
+    public async Task UpdateHP(Vector2 pos, int hp, bool needAnimation)
     {
         int slotID = ConvertPosToSlotID(pos);
         if (slotID < 0 || slotID >= characterSlotsList.Count)
             return;
 
         characterSlotsList[slotID].UpdateHP(hp);
+    }
+
+    public async Task UpdateStatus(Vector2 pos, Dictionary<CharacterStatus, float> statusDic, bool needAnimation)
+    {
+        int slotID = ConvertPosToSlotID(pos);
+        if (slotID < 0 || slotID >= characterSlotsList.Count)
+            return;
+
+        characterSlotsList[slotID].UpdateStatus(statusDic);
     }
 
     public void UpdateCountdown(Vector2 pos, int coundown)
@@ -231,14 +240,18 @@ public class UIBattleCharacterPanel : MonoBehaviour
     {
         try
         {
+            bool hasEffectSlot = false;
             for (int i = 0; i < vectors.Count; i++)
             {
                 int slotID = ConvertPosToSlotID(vectors[i]);
-                if(slotID >= 0 && slotID < characterSlotsList.Count)
+                if (slotID >= 0 && slotID < characterSlotsList.Count)
+                {
                     characterSlotsList[slotID].ShowEffectArea(needSelect, isAreaEffect);
+                    hasEffectSlot = true;
+                }
             }
 
-            if (needSelect)
+            if (needSelect && hasEffectSlot)
             {
                 waitSelectPos = null;
                 while (!waitSelectPos.HasValue)

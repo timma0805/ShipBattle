@@ -4,23 +4,12 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Playables;
 
-public class BattleEnemy : ITargetObject
+public class BattleEnemy : BattleCharacter
 {
-    private CharacterState enemyState;
-
     public int Countdown { get; private set; }
-    private FaceDirection currentDirection;
 
-    private EnemyData enemyData;
     private EnemySkillData curEnemySkill;
     private EnemySkillData previosEnemySkill;
-    public void Init(EnemyData _enemyData)
-    {
-        enemyData = _enemyData;
-        Countdown = -1;
-        enemyState = CharacterState.Idle;
-        enemyData.CurHP =enemyData.HP;
-    }
 
     public async Task<EnemySkillData> DoAction()
     {
@@ -30,6 +19,7 @@ public class BattleEnemy : ITargetObject
         }
         else
         {
+            EnemyData enemyData = (EnemyData)base.characterData;
             previosEnemySkill = curEnemySkill;
 
             List<EnemySkillData> avaliableList = new List<EnemySkillData>();
@@ -54,8 +44,17 @@ public class BattleEnemy : ITargetObject
         }
     }
 
+    public override void EndTurn()
+    {
+        if (curEnemySkill != null && Countdown == 0)
+            curEnemySkill = null;
+        base.EndTurn();
+    }
+
     private bool CheckSkillCanUseOrNot(EnemySkillData skill)
     {
+        EnemyData enemyData = (EnemyData)base.characterData;
+
         CharacterData characterData = null;
         int compareValue = 0;
         if(skill.ConditionTarget == null)   //No Condition
@@ -77,74 +76,23 @@ public class BattleEnemy : ITargetObject
         return true;
     }
 
-    public void EndTurn()
-    {
-        if (Countdown == 0 && curEnemySkill != null)
-            curEnemySkill = null;
-    }
-
-    public void BeTarget()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public int BeAttacked(int value)
-    {
-        enemyData.CurHP -= value;
-        Debug.Log("enemyData.HP" + enemyData.CurHP);
-
-        if (enemyData.CurHP <= 0)
-            enemyState = CharacterState.Dead;
-
-        return enemyData.CurHP;
-    }
-
-    public void BeMoved(Vector2 pos, FaceDirection rotation)
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public int BeHealed(int value)
-    {
-        enemyData.CurHP += value;
-        if (enemyData.CurHP > enemyData.HP)
-            enemyData.CurHP = enemyData.HP;
-
-        Debug.Log("enemyData.CurHP" + enemyData.CurHP);
-
-        return enemyData.CurHP;
-    }
-
-    public bool IsDead()
-    {
-        if (enemyState == CharacterState.Dead)
-            return true;
-
-        return enemyData.CurHP <= 0;
-    }
-
-    public bool IsRemoved()
-    {
-        return enemyState == CharacterState.Removed;
-    }
-
-    public void RemoveFromBattle()
-    {
-        enemyState = CharacterState.Removed;
-    }
-
-    public bool IsPlayerCharacter()
+    public override bool IsPlayerCharacter()
     {
         return false;
     }
 
-    public CharacterData GetCharacterData()
+    protected override void CheckStatus()
     {
-        return enemyData;
+        if (statusDic.Count > 0)
+        {
+            foreach (var status in statusDic)
+            {
+                if (status.Key == CharacterStatus.Stun)
+                    Countdown++;
+            }
+        }
+
+        base.CheckStatus();
     }
 
-    public FaceDirection GetFaceDirection()
-    {
-        return currentDirection;
-    }
 }

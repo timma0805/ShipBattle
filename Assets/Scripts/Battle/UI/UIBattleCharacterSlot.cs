@@ -30,6 +30,8 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     public TMP_Text hpTxt;
     [SerializeField]
     public TMP_Text cdTxt;
+    [SerializeField]
+    public TMP_Text statusTxt;
 
     public int slotid { get; private set; }
     private Action<int> selectSlotCallback;
@@ -66,8 +68,9 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
 
     public void Init(int _slotid, Action<int> _selectCallback)
     {
-        hpTxt.text = "";
-        cdTxt.text = "";
+        hpTxt.text = string.Empty;
+        cdTxt.text = string.Empty;
+        statusTxt.text = string.Empty;
 
         slotid = _slotid;
         selectSlotCallback = _selectCallback;
@@ -101,6 +104,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     {
         hpTxt.text = string.Empty;
         cdTxt.text = string.Empty;
+        statusTxt.text = string.Empty;
     }
 
     public async Task<bool> MoveCharacterToSlot(GameObject newCharacter, bool isPlayer, CharacterData characterData)
@@ -294,6 +298,48 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
             cdTxt.text = "CD: " + cd.ToString();
         else
             cdTxt.text = string.Empty;
+    }
+
+    public void UpdateStatus(Dictionary<CharacterStatus,float> statusDic)
+    {
+        statusTxt.text = string.Empty;
+
+        if (statusDic.Count != 0)
+        {
+            foreach (var item in statusDic)
+            {
+                if(item.Key == CharacterStatus.Freeze) 
+                    statusTxt.text += $"Freeze {item.Value}\n";
+                else if (item.Key == CharacterStatus.Shield)
+                    statusTxt.text += $"Shield {item.Value}\n";
+                else if (item.Key == CharacterStatus.Blind)
+                    statusTxt.text += $"Blind {item.Value}\n";
+                else if (item.Key == CharacterStatus.Untargetable)
+                    statusTxt.text += $"Untargetable {item.Value} \n";
+                else if (item.Key == CharacterStatus.Bleed)
+                    statusTxt.text += $"Bleed {item.Value} \n";
+                else if (item.Key == CharacterStatus.Posion)
+                    statusTxt.text += $"Posion {item.Value} \n";
+                else if (item.Key == CharacterStatus.Unmovement)
+                    statusTxt.text += $"Unmovement {item.Value} \n";
+                else if (item.Key == CharacterStatus.Stun)
+                    statusTxt.text += $"Stun {item.Value} \n";
+                else if (item.Key == CharacterStatus.Dogde) 
+                    statusTxt.text += $"Dodge {item.Value} \n";
+                  else if (item.Key == CharacterStatus.Weakness) 
+                    statusTxt.text += $"Weakness {item.Value} \n";
+                else if (item.Key == CharacterStatus.IncreaseAttack)
+                    statusTxt.text += $"IncreaseAttack {item.Value} \n";
+                else if (item.Key == CharacterStatus.Fire)
+                    statusTxt.text += $"Fire {item.Value} \n";
+
+            }
+        }
+    }
+
+    public void AddStatus(CardEffectType effectType, int value)
+    {
+
     }
 
     public void ShowEffectArea(bool needSelect, bool isAreaEffect)
