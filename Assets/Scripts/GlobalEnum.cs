@@ -45,10 +45,10 @@ using UnityEngine;
 
     public enum VillageBuildingType
     {
+        CaptainChoosing,
         SupplyShop,
         Bar,
-        Repair,
-        OtherNPC
+        Repair
     }
 
     public enum ItemType

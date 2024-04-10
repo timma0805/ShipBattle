@@ -225,7 +225,7 @@ public class BattleGameCoreController : MonoBehaviour
     }
     private async Task StartVillage()
     {
-        villageController.StartVillage();
+        villageController.StartVillage(false);
     }
     private async Task EndVillage()
     {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,8 @@ public class VillagePanelUI : MonoBehaviour
     private Button[] accessPoints;
     [SerializeField]
     private Button leaveBtn;
+
+    private Action[] _callbacks;
 
     // Start is called before the first frame update
     void Start()
@@ -26,8 +29,9 @@ public class VillagePanelUI : MonoBehaviour
             leaveBtn.onClick.AddListener(() => endCallback());
     }
 
-    public void ShowVillageWithAccessPoints(Vector2[] posList, Action[] callbacks)
+    public void ShowVillageWithAccessPoints(Vector2[] posList, string[] strings, Action[] callbacks)
     {
+        _callbacks = callbacks;
         for (int i = 0; i < accessPoints.Length; i++)
         {
             accessPoints[i].gameObject.SetActive(false);
@@ -39,7 +43,11 @@ public class VillagePanelUI : MonoBehaviour
             if(i < posList.Length)
             {
                 accessPoints[i].transform.localPosition = posList[i];
-                accessPoints[i].onClick.AddListener(() => callbacks[i]());
+                accessPoints[i].GetComponentInChildren<TMP_Text>().text = strings[i];
+                int temp = i;
+                accessPoints[i].onClick.AddListener(() => {
+                    _callbacks[temp]();
+                });
                accessPoints[i].gameObject.SetActive(true);
             }
         }
