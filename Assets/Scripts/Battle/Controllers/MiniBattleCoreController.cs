@@ -9,6 +9,7 @@ using static UnityEditor.PlayerSettings;
 using UnityEngine.TextCore.Text;
 using static JsonManager;
 using static UnityEngine.GraphicsBuffer;
+using UnityEditor.Experimental.GraphView;
 
 public class MiniBattleCoreController : MonoBehaviour
 {
@@ -302,9 +303,9 @@ public class MiniBattleCoreController : MonoBehaviour
                     continue;
 
                 Vector2 pos = characterPosList[i];
-                EnemySkillData skillData = await enemy.DoAction();
+                var (skillData, countDown) = await enemy.DoAction();
 
-                if (skillData != null)
+                if (skillData != null && countDown == 0)
                 {
                     if (skillData.Type == CardType.Attack)
                     {
@@ -341,8 +342,11 @@ public class MiniBattleCoreController : MonoBehaviour
                         await uiCharacterPanel.UpdateHP(pos, hp, true);
                     }                 
                 }
-                else
+                else if(countDown > 0 && skillData.Type == CardType.Attack) 
                 {
+                    List<Vector2> effectPosList = FindEnemySkillEffectArea(skillData, pos, characterList[i].GetFaceDirection());
+                    if(effectPosList.Count > 0) 
+                        uiCharacterPanel.ShowEffectArea(effectPosList, false, false);
                     uiCharacterPanel.UpdateCountdown(pos, enemy.Countdown);
                 }
 
@@ -363,6 +367,23 @@ public class MiniBattleCoreController : MonoBehaviour
 
     }
 
+    private List<Vector2> FindEnemySkillEffectArea(EnemySkillData skill, Vector2 pos, FaceDirection faceDirection)
+    {
+        if (skill.Target == EnemyActionTarget.Self)
+            return new List<Vector2>() { pos };
+
+        List<Vector2> effectPosList = new List<Vector2>();
+
+        if (skill.Type == CardType.Move)
+            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Any, false);
+        else if (skill.Type == CardType.Heal)
+            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Enemy, false);
+        else
+            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Ally, false);
+
+        return effectPosList;
+    }
+
     private Vector2 FindEnemySkillBestPos(EnemySkillData skill, Vector2 pos, FaceDirection faceDirection)
     {
         Vector2 targetpos = pos;
@@ -371,14 +392,7 @@ public class MiniBattleCoreController : MonoBehaviour
         if (skill.Target == EnemyActionTarget.Self)
             return pos;
 
-        List<Vector2> effectPosList = new List<Vector2>();
-
-        if(skill.Type == CardType.Move)
-            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Any, false);
-        else if (skill.Type == CardType.Heal)
-            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Enemy, false);
-        else
-            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Ally, false);
+        List<Vector2> effectPosList = FindEnemySkillEffectArea(skill, pos, faceDirection);
 
         int characterIndex = -1;
         for (int i = 0; i < effectPosList.Count; i++)

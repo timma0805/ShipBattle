@@ -11,7 +11,7 @@ public class BattleEnemy : BattleCharacter
     private EnemySkillData curEnemySkill;
     private EnemySkillData previosEnemySkill;
 
-    public async Task<EnemySkillData> DoAction()
+    public async Task<(EnemySkillData, int)> DoAction()
     {
         if(curEnemySkill != null)
         {
@@ -35,13 +35,7 @@ public class BattleEnemy : BattleCharacter
             Countdown = curEnemySkill.Countdown;
         }
 
-        if (Countdown == 0)
-            return curEnemySkill;
-        else
-        {
-            Debug.Log("Countdown: " +Countdown);
-            return null;
-        }
+        return (curEnemySkill, Countdown);
     }
 
     public override void EndTurn()

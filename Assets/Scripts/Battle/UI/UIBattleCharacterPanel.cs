@@ -30,12 +30,21 @@ public class UIBattleCharacterPanel : MonoBehaviour
     //Setting
     private const int maxSlotPerRow = 6;
     private Vector2? waitSelectPos = null;
+    private Vector2 cancelSelectPos = new Vector2(-99,-99);
     // Start is called before the first frame update
     void Start()
     {
         settingBtn.onClick.AddListener(OpenSetting);
         specialSkillBtn.onClick.AddListener(ClickSpecialSkill);
         endTurnBtn.onClick.AddListener(ClickEndTurn);
+    }
+
+    private void Update()
+    {
+        if(Input.GetMouseButtonDown(1))
+        {
+            waitSelectPos = cancelSelectPos;
+        }
     }
 
     public void Init(MiniBattleCoreController _controller)
@@ -259,14 +268,26 @@ public class UIBattleCharacterPanel : MonoBehaviour
                     await Task.Yield();
                 }
 
+                for (int i = 0; i < vectors.Count; i++) //remove show effects
+                {
+                    int slotID = ConvertPosToSlotID(vectors[i]);
+                    if (slotID >= 0 && slotID < characterSlotsList.Count)
+                    {
+                        characterSlotsList[slotID].Reset();
+                    }
+                }
+
                 return waitSelectPos.Value;
             }
-            else
+            else if (hasEffectSlot)
             {
                 return vectors[0];
             }
+            else
+                return vectors[0];
+
         }
-        catch(System.Exception e)
+        catch (System.Exception e)
         {
             Debug.LogError("ShowEffectArea Error: " + e.Message);
             return vectors[0];
