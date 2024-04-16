@@ -54,10 +54,40 @@ using UnityEngine;
     public enum ItemType
     {
         Equipment,
+        ShipEquipment,
         Food,
         SpecialMaterial,
         Poison
     }
+
+    public enum ItemEffectTime
+    {
+        StartBattle,
+        DuringBattle,
+        EndBattle
+    }
+
+    public enum ItemEffectTarget
+{
+    Ally,
+    Enemy,
+    Any,
+    Player
+}
+
+public enum ItemEffect
+{
+    IncreaseAttack,
+    DecreaseAttack,
+    IncreaseHP,
+    DecreaseHP,
+    IncreaseMP,
+    AddCountdown,
+    Shield,
+    IncreaseReward,
+    IncreaseMoney,
+    Weakness
+}
 
     public enum CardType
     {

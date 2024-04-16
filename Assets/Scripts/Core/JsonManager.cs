@@ -15,6 +15,8 @@ public class JsonManager : MonoBehaviour
     public EnemySkillDB enemySkillDB { get; private set; }
     public MapDB mapDB { get; private set; }
 
+    public ItemDB itemDB { get; private set; }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,10 +31,24 @@ public class JsonManager : MonoBehaviour
     public async Task Init()
     {
         await ParseCardJson();
+        await ParseItemJson();
         await ParsePlayerCharacterJson();
         await ParseEnemySkillJson();
         await ParseEnemyJson();
         await ParseMapJson();
+    }
+
+    private async Task ParseItemJson()
+    {
+        try
+        {
+            string json = Resources.Load("JSON/ItemJson").ToString();
+            itemDB = JsonConvert.DeserializeObject<ItemDB>("{\"items\":" + json + "}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 
     private async Task ParseCardJson()
@@ -175,6 +191,12 @@ public class JsonManager : MonoBehaviour
     public class MapDB
     {
         public List<EntireMapData> maps;
+    }
+
+    [Serializable]
+    public class ItemDB
+    {
+        public List<ItemData> items;
     }
 }
 

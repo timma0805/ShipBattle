@@ -11,7 +11,7 @@ public class BattleEnemy : BattleCharacter
     private EnemySkillData curEnemySkill;
     private EnemySkillData previosEnemySkill;
 
-    public async Task<(EnemySkillData, int)> DoAction()
+    public async Task<(EnemySkillData, int)> DoAction(Vector2 pos, List<Vector2> playerPosList)
     {
         if(curEnemySkill != null)
         {
@@ -26,7 +26,7 @@ public class BattleEnemy : BattleCharacter
             for(int i = 0; i < enemyData.SkillList.Count; i++)
             {
                 var data = enemyData.SkillList[i];
-                if(CheckSkillCanUseOrNot(data))
+                if(CheckSkillCanUseOrNot(data, pos, playerPosList))
                     avaliableList.Add(data);
             }
 
@@ -45,29 +45,42 @@ public class BattleEnemy : BattleCharacter
         base.EndTurn();
     }
 
-    private bool CheckSkillCanUseOrNot(EnemySkillData skill)
+    private bool CheckSkillCanUseOrNot(EnemySkillData skill, Vector2 pos, List<Vector2> playerPosList)
     {
+        bool canUse = true;
         EnemyData enemyData = (EnemyData)base.characterData;
 
-        CharacterData characterData = null;
+        //Check Compare
         int compareValue = 0;
-        if(skill.ConditionTarget == null)   //No Condition
-            return true;
+        if (skill.ConditionTarget != null)
+        {
+            if (skill.ConditionTarget == CardEffectTarget.Self)
+                characterData = enemyData;
 
-        if (skill.ConditionTarget == CardEffectTarget.Self)
-            characterData = enemyData;
-        
-        if(skill.ConditionProperty == CardEffectType.HP)
-            compareValue = characterData.HP;
+            if (skill.ConditionProperty == CardEffectType.HP)
+                compareValue = characterData.HP;
 
-        if (skill.ConditionCompare == ConditionCompare.Equal)
-            return compareValue == skill.ConditionValue.Value;
-        else if (skill.ConditionCompare == ConditionCompare.Less)
-            return compareValue < skill.ConditionValue.Value;
-        else if (skill.ConditionCompare == ConditionCompare.More)
-            return compareValue > skill.ConditionValue.Value;
+            if (skill.ConditionCompare == ConditionCompare.Equal)
+                canUse = compareValue == skill.ConditionValue.Value;
+            else if (skill.ConditionCompare == ConditionCompare.Less)
+                canUse = compareValue < skill.ConditionValue.Value;
+            else if (skill.ConditionCompare == ConditionCompare.More)
+                canUse = compareValue > skill.ConditionValue.Value;
+        }
 
-        return true;
+        if(!canUse)
+            return false;
+
+        if (skill.Type != CardType.Move)
+        {
+            for (int i = 0; i < playerPosList.Count; i++)
+            {
+                if (Vector2.Distance(pos, playerPosList[i]) > skill.Distance)
+                    return false;
+            }
+        }
+
+        return canUse;
     }
 
     public override bool IsPlayerCharacter()
@@ -87,6 +100,15 @@ public class BattleEnemy : BattleCharacter
         }
 
         base.CheckStatus();
+    }
+
+    public int AddCountdown(int value)
+    {
+        if(curEnemySkill !=  null) {
+            Countdown += value;
+        }
+
+        return Countdown;
     }
 
 }

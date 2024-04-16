@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using static JsonManager;
 
 public class PlayerController : MonoBehaviour
 {
@@ -23,17 +24,21 @@ public class PlayerController : MonoBehaviour
         
     }
 
-    public void Init(JsonManager.CharacterDB characterDB)
+    public void Init(CharacterDB characterDB, ItemDB itemDB)
     {
         basePlayerData = new BasePlayerData();
         battlePlayerData = new BattlePlayerData();
 
-        battlePlayerData.battlePlayerCharacterDatas = new List<BattlePlayerCharacterData>();
-
         //Temp: Make fake save
-        battlePlayerData.battlePlayerCharacterDatas.Add(characterDB.characters.Find(x => x.ID == 10));
-        battlePlayerData.battlePlayerCharacterDatas.Add(characterDB.characters.Find(x => x.ID == 1));
-        battlePlayerData.battlePlayerCharacterDatas.Add(characterDB.characters.Find(x => x.ID == 2));
+        battlePlayerData.battlePlayerCharacterList.Add(characterDB.characters.Find(x => x.ID == 10));
+        battlePlayerData.battlePlayerCharacterList.Add(characterDB.characters.Find(x => x.ID == 1));
+        battlePlayerData.battlePlayerCharacterList.Add(characterDB.characters.Find(x => x.ID == 2));
+
+        battlePlayerData.itemList.Add(itemDB.items.Find(x => x.ID == 1));
+        battlePlayerData.itemList.Add(itemDB.items.Find(x => x.ID == 2));
+        battlePlayerData.itemList.Add(itemDB.items.Find(x => x.ID == 3));
+        battlePlayerData.itemList.Add(itemDB.items.Find(x => x.ID == 9));
+
     }
 
 

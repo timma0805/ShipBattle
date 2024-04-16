@@ -119,13 +119,13 @@ public class MiniBattleCoreController : MonoBehaviour
             List<CardData> cardList = new List<CardData>();
 
             //Apply data
-            for (int i = 0; i < playerData.battlePlayerCharacterDatas.Count; i++)
+            for (int i = 0; i < playerData.battlePlayerCharacterList.Count; i++)
             {
-                playerData.battlePlayerCharacterDatas[i].CurHP = playerData.battlePlayerCharacterDatas[i].HP;
-                cardList.AddRange(playerData.battlePlayerCharacterDatas[i].CardDataList);
+                playerData.battlePlayerCharacterList[i].CurHP = playerData.battlePlayerCharacterList[i].HP;
+                cardList.AddRange(playerData.battlePlayerCharacterList[i].CardDataList);
 
                 BattlePlayerCharacter battlePlayerCharacter = new BattlePlayerCharacter();
-                battlePlayerCharacter.Init(playerData.battlePlayerCharacterDatas[i]);
+                battlePlayerCharacter.Init(playerData.battlePlayerCharacterList[i]);
                 characterList.Add(battlePlayerCharacter);
                 characterOccList.Add(battlePlayerCharacter.GetCharacterData().Name);
 
@@ -167,7 +167,104 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task StartGame()
     {
+        //Process Player Items
+        ProcessPlayerItems(BattleStage.StartGame);
+
         RunStage(BattleStage.PlayerTurn);
+    }
+
+    private void ProcessPlayerItems(BattleStage battleStage)
+    {
+        List<ItemData> needProcessItems = new List<ItemData>();
+        for (int i = 0; i < playerData.itemList.Count; i++)
+        {
+            if (playerData.itemList[i].EffectTime == ItemEffectTime.StartBattle && battleStage == BattleStage.StartGame)
+                needProcessItems.Add(playerData.itemList[i]);
+            else if (playerData.itemList[i].EffectTime == ItemEffectTime.EndBattle && battleStage == BattleStage.EndGame)
+                needProcessItems.Add(playerData.itemList[i]);
+        }
+
+        foreach (ItemData item in needProcessItems)
+        {
+            ProcessItemEffect(item);
+        }
+    }
+
+    private async Task ProcessItemEffect(ItemData item)
+    {
+        try
+        {
+            if (item.UseTime == 0)
+                return;
+
+            if (item.EffectTarget == ItemEffectTarget.Player)
+            {
+                if (item.Effect == ItemEffect.IncreaseReward)
+                {
+
+                }
+                else if (item.Effect == ItemEffect.IncreaseMoney)
+                {
+
+                }
+
+                return;
+            }
+
+            List<BattleCharacter> _characterList = new List<BattleCharacter>();
+
+            if (item.EffectTarget == ItemEffectTarget.Any)
+            {
+                Vector2 targetPos = await uiCharacterPanel.ShowEffectArea(characterPosList, true, false);
+                _characterList.Add(characterList[characterPosList.FindIndex(x => x == targetPos)]);
+            }
+            else if (item.EffectTarget == ItemEffectTarget.Enemy)
+            {
+                _characterList = characterList.FindAll(x => x.IsPlayerCharacter() == false);
+            }
+            else if (item.EffectTarget == ItemEffectTarget.Ally)
+            {
+                _characterList = characterList.FindAll(x => x.IsPlayerCharacter());
+            }
+
+            foreach (BattleCharacter character in _characterList)
+            {
+                Vector2 pos = characterPosList[characterList.FindIndex(x => x == character)];
+
+                if (item.Effect == ItemEffect.IncreaseHP)
+                {
+                    character.BeHealed(item.Value);
+                    await uiCharacterPanel.UpdateHP(pos, character.GetCharacterData().CurHP, item.EffectTime == ItemEffectTime.DuringBattle);
+                }
+                else if (item.Effect == ItemEffect.DecreaseHP)
+                {
+                    character.BeAttacked(item.Value);
+                    await uiCharacterPanel.UpdateHP(pos, character.GetCharacterData().CurHP, item.EffectTime == ItemEffectTime.DuringBattle);
+                }
+                else if (item.Effect == ItemEffect.IncreaseAttack)
+                {
+                    character.BeAddStatus(CardEffectType.IncreaseAttack, item.Value);
+                    await uiCharacterPanel.UpdateStatus(pos, character.statusDic, item.EffectTime == ItemEffectTime.DuringBattle);
+                }
+                else if (item.Effect == ItemEffect.Weakness)
+                {
+                    character.BeAddStatus(CardEffectType.Weakness, item.Value);
+                    await uiCharacterPanel.UpdateStatus(pos, character.statusDic, item.EffectTime == ItemEffectTime.DuringBattle);
+                }
+                else if (item.Effect == ItemEffect.AddCountdown)
+                    uiCharacterPanel.UpdateCountdown(pos, ((BattleEnemy)character).AddCountdown(item.Value));
+
+            }
+
+            if (item.UseTime > 0)
+            {
+                item.UseTime--;
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogException(ex);
+        }
     }
 
     private async Task PlayerTurn()
@@ -303,7 +400,7 @@ public class MiniBattleCoreController : MonoBehaviour
                     continue;
 
                 Vector2 pos = characterPosList[i];
-                var (skillData, countDown) = await enemy.DoAction();
+                var (skillData, countDown) = await enemy.DoAction(pos, GetPlayerCharactersPosList());
 
                 if (skillData != null && countDown == 0)
                 {
@@ -365,6 +462,20 @@ public class MiniBattleCoreController : MonoBehaviour
             Debug.LogException(e);
         }
 
+    }
+
+    private List<Vector2> GetPlayerCharactersPosList()
+    {
+        List<Vector2> result = new List<Vector2>();
+        for (int i = 0; i < characterList.Count; i++)
+        {
+            if (characterList[i].IsPlayerCharacter())
+            {
+                result.Add(characterPosList[i]);
+            }
+        }
+
+        return result;
     }
 
     private List<Vector2> FindEnemySkillEffectArea(EnemySkillData skill, Vector2 pos, FaceDirection faceDirection)
@@ -600,6 +711,8 @@ public class MiniBattleCoreController : MonoBehaviour
         {
             await uiCharacterPanel.Victory();
         }
+
+        ProcessPlayerItems(BattleStage.EndGame);
 
         if (finishBattleCallback != null)
             finishBattleCallback();

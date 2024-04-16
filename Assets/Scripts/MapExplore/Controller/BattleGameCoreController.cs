@@ -78,7 +78,7 @@ public class BattleGameCoreController : MonoBehaviour
         await jsonManager.Init();
 
         //Load Player Data
-        playerController.Init(jsonManager.characterDB);
+        playerController.Init(jsonManager.characterDB, jsonManager.itemDB);
 
         mapController = Instantiate(oceanMapPrefab).GetComponent<MapController>();
         mapController.GetComponent<Canvas>().worldCamera = uiCamera;
