@@ -294,6 +294,18 @@ public class UIBattleCharacterPanel : MonoBehaviour
         }
     }
 
+    public void ClearEffectArea(List<Vector2> vectors)
+    {
+        for (int i = 0; i < vectors.Count; i++)
+        {
+            int slotID = ConvertPosToSlotID(vectors[i]);
+            if (slotID >= 0 && slotID < characterSlotsList.Count)
+            {
+                characterSlotsList[slotID].Reset();
+            }
+        }
+    }
+
     private void SelectSlot(int slotid)
     {
         waitSelectPos = ConvertSlotIDToPos(slotid);
