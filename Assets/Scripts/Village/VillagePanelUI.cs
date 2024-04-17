@@ -37,16 +37,53 @@ public class VillagePanelUI : MonoBehaviour
     private Action[] _callbacks;
     private const int dummyMapSpriteCount = 3;
 
+    private RectTransform bgRectTransform;
+    private const float moveSpeed = 5f;
+    private const float moveThreshold = 25f; // Threshold distance from screen edge to start moving
+
+
     // Start is called before the first frame update
     private void Awake()
     {
+        bgRectTransform = bgImg.GetComponent<RectTransform>();
         mapMaskEndPadding = bgImg.GetComponent<RectTransform>().rect.width/2;
         mapMaskPaddingGap = (mapMaskEndPadding - mapMaskStartPadding) / (openBGSprites.Length - dummyMapSpriteCount);
         leaveBtn.onClick.AddListener(LeaveVillage);
     }
 
-    void Start()
+    void Update()
     {
+        // Get the mouse position
+        Vector3 mousePosition = Input.mousePosition;
+
+        // Get the screen dimensions
+        float screenWidth = Screen.width;
+        float screenHeight = Screen.height;
+
+        // Check if mouse is near the screen edge
+        if (mousePosition.x <= moveThreshold && bgRectTransform.localPosition.x < 500.0f) // Right edge
+        {
+            MoveBGImage(Vector2.right);
+        }
+        else if (mousePosition.x >= screenWidth - moveThreshold && bgRectTransform.localPosition.x > -500.0f) // Left edge
+        {
+            MoveBGImage(Vector2.left);
+        }
+        else if (mousePosition.y <= moveThreshold && bgRectTransform.localPosition.y < 550.0f) // Top edge
+        {
+            MoveBGImage(Vector2.up);
+        }
+        else if (mousePosition.y >= screenHeight - moveThreshold && bgRectTransform.localPosition.y > -370) // Bottom edge
+        {
+            MoveBGImage(Vector2.down);
+        }
+    }
+
+    // Function to move the BG image in a specified direction
+    private void MoveBGImage(Vector2 direction)
+    {
+        // Move the image using its RectTransform
+        bgRectTransform.position += (Vector3)direction * moveSpeed * Time.deltaTime;
     }
 
 
