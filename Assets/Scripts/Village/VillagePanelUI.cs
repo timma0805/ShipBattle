@@ -9,6 +9,8 @@ using UnityEngine.UI;
 public class VillagePanelUI : MonoBehaviour
 {
     [SerializeField]
+    private Camera uiCamera;
+    [SerializeField]
     private Sprite[] openBGSprites;
     [SerializeField]
     private Sprite[] closeBGSprites;
@@ -38,14 +40,21 @@ public class VillagePanelUI : MonoBehaviour
     private const int dummyMapSpriteCount = 3;
 
     private RectTransform bgRectTransform;
+    private RectTransform villageRectTransform;
     private const float moveSpeed = 5f;
     private const float moveThreshold = 25f; // Threshold distance from screen edge to start moving
-
+    private float screenWidth;
+    private float screenHeight;
 
     // Start is called before the first frame update
     private void Awake()
     {
+        // Get the screen dimensions
+        screenWidth = Screen.width;
+        screenHeight = Screen.height;
+
         bgRectTransform = bgImg.GetComponent<RectTransform>();
+        villageRectTransform = villageImg.GetComponent<RectTransform>();
         mapMaskEndPadding = bgImg.GetComponent<RectTransform>().rect.width/2;
         mapMaskPaddingGap = (mapMaskEndPadding - mapMaskStartPadding) / (openBGSprites.Length - dummyMapSpriteCount);
         leaveBtn.onClick.AddListener(LeaveVillage);
@@ -56,24 +65,22 @@ public class VillagePanelUI : MonoBehaviour
         // Get the mouse position
         Vector3 mousePosition = Input.mousePosition;
 
-        // Get the screen dimensions
-        float screenWidth = Screen.width;
-        float screenHeight = Screen.height;
+    
 
         // Check if mouse is near the screen edge
-        if (mousePosition.x <= moveThreshold && bgRectTransform.localPosition.x < 500.0f) // Right edge
+        if (mousePosition.x <= moveThreshold) // Right edge
         {
             MoveBGImage(Vector2.right);
         }
-        else if (mousePosition.x >= screenWidth - moveThreshold && bgRectTransform.localPosition.x > -500.0f) // Left edge
+        else if (mousePosition.x >= screenWidth - moveThreshold ) // Left edge
         {
             MoveBGImage(Vector2.left);
         }
-        else if (mousePosition.y <= moveThreshold && bgRectTransform.localPosition.y < 550.0f) // Top edge
+        else if (mousePosition.y <= moveThreshold ) // Top edge
         {
             MoveBGImage(Vector2.up);
         }
-        else if (mousePosition.y >= screenHeight - moveThreshold && bgRectTransform.localPosition.y > -370) // Bottom edge
+        else if (mousePosition.y >= screenHeight - moveThreshold) // Bottom edge
         {
             MoveBGImage(Vector2.down);
         }
@@ -82,13 +89,50 @@ public class VillagePanelUI : MonoBehaviour
     // Function to move the BG image in a specified direction
     private void MoveBGImage(Vector2 direction)
     {
+        if (!IsImageInScreen(direction))
+            return;
         // Move the image using its RectTransform
         bgRectTransform.position += (Vector3)direction * moveSpeed * Time.deltaTime;
     }
 
-
-    public void Init(Action closeCallback)
+    public bool IsImageInScreen(Vector2 direction)
     {
+        // Get the image's position in canvas space
+        Vector3[] corners = new Vector3[4];
+        villageRectTransform.GetWorldCorners(corners);
+        for (int i = 0; i < corners.Length; i++)
+        {
+            corners[i] = RectTransformUtility.WorldToScreenPoint(uiCamera, corners[i]);
+        }
+
+        // Check if any corner is outside the screen boundaries
+        for(int i = 0;i < corners.Length;i++)
+        {
+            if(direction== Vector2.left && (i == 0 || i == 1) && corners[i].x < -(villageRectTransform.rect.width / 2.0f) * bgImg.transform.localScale.x)
+            {
+                return false; 
+            }
+            else if(direction == Vector2.right && (i == 2 || i == 3) && corners[i].x > (Screen.width + villageRectTransform.rect.width / 2.0f) * bgImg.transform.localScale.x)
+            {
+                return false;
+            }
+            else if (direction == Vector2.down && (i == 0 || i == 3) && corners[i].y < -(villageRectTransform.rect.height/2.0f)* bgImg.transform.localScale.x)
+            {
+                return false;
+            }
+            else if (direction == Vector2.up && (i == 1 || i == 2) && corners[i].y > (Screen.height + villageRectTransform.rect.height/2.0f)*bgImg.transform.localScale.x)
+            {
+                return false;
+            }      
+        }
+
+        return true; // Image is fully within the screen
+    }
+
+
+    public void Init(Action closeCallback, Camera camera)
+    {
+        uiCamera = camera;
         _closeCallback = closeCallback;
     }
 

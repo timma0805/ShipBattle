@@ -88,9 +88,9 @@ public class BattleGameCoreController : MonoBehaviour
         villageController = Instantiate(villagePanelPrefab).GetComponent<VillageController>();
         villageController.GetComponent<Canvas>().worldCamera = uiCamera;
         villageController.gameObject.SetActive(false);
-        villageController.Init(() => {
+        villageController.Init(() => {            
             LoadBattleStage(BattleStage.EndVillage);
-        });
+        }, uiCamera);
 
         eventController = Instantiate(eventPanelPrefab).GetComponent<SpecialEventController>();
         eventController.GetComponent<Canvas>().worldCamera = uiCamera;

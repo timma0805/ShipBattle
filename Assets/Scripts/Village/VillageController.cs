@@ -7,15 +7,19 @@ public class VillageController : MonoBehaviour
 {
     private VillagePanelUI panelUI;
     private Action endCallback;
+    private Camera _uiCamera;
     private void Awake()
     {
         panelUI = GetComponent<VillagePanelUI>();
-        panelUI.Init(EndVillage);
     }
 
-    public void Init(Action _endCallback)
+    public void Init(Action _endCallback, Camera uiCamera)
     {
+        _uiCamera = uiCamera;
         endCallback = _endCallback;
+
+        panelUI.Init(EndVillage, uiCamera);
+
     }
 
 
