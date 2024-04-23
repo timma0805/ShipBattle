@@ -541,7 +541,7 @@ public class MiniBattleCoreController : MonoBehaviour
                     if(skill.Target == EnemyActionTarget.Lowest || skill.Target == EnemyActionTarget.Hightest)
                         compareValue = data.CurHP;
                     else if (skill.Target == EnemyActionTarget.Nearest || skill.Target == EnemyActionTarget.Farest)
-                        compareValue = Vector2.Distance(pos, effectPosList[i]);
+                        compareValue = CalculateDistance(pos, effectPosList[i]);
 
                     targetpos = effectPosList[i];
                 }
@@ -557,14 +557,14 @@ public class MiniBattleCoreController : MonoBehaviour
                         compareValue = data.CurHP;
                         targetpos = effectPosList[i];
                     }
-                    else if (skill.Target == EnemyActionTarget.Nearest && compareValue < Vector2.Distance(pos, effectPosList[i]))
+                    else if (skill.Target == EnemyActionTarget.Nearest && compareValue < CalculateDistance(pos, effectPosList[i]))
                     {
-                        compareValue = Vector2.Distance(pos, effectPosList[i]);
+                        compareValue = CalculateDistance(pos, effectPosList[i]);
                         targetpos = effectPosList[i];
                     }
-                    else if (skill.Target == EnemyActionTarget.Farest && compareValue > Vector2.Distance(pos, effectPosList[i]))
+                    else if (skill.Target == EnemyActionTarget.Farest && compareValue > CalculateDistance(pos, effectPosList[i]))
                     {
-                        compareValue = Vector2.Distance(pos, effectPosList[i]);
+                        compareValue = CalculateDistance(pos, effectPosList[i]);
                         targetpos = effectPosList[i];
                     }
                 }
@@ -579,9 +579,9 @@ public class MiniBattleCoreController : MonoBehaviour
                 {
                     float distance = 99;
                     for (int i = 0; i < characterPosList.Count; i++) {
-                        if (Vector2.Distance(characterPosList[i], pos) < distance && characterList[i].IsPlayerCharacter())
+                        if (CalculateDistance(characterPosList[i], pos) < distance && characterList[i].IsPlayerCharacter())
                         {
-                            distance = Vector2.Distance(characterPosList[i], pos);
+                            distance = CalculateDistance(characterPosList[i], pos);
                             characterIndex = i;
                         }    
                     }
@@ -591,9 +591,9 @@ public class MiniBattleCoreController : MonoBehaviour
                     float distance = -1;
                     for (int i = 0; i < characterPosList.Count; i++)
                     {
-                        if (Vector2.Distance(characterPosList[i], pos) > distance && characterList[i].IsPlayerCharacter())
+                        if (CalculateDistance(characterPosList[i], pos) > distance && characterList[i].IsPlayerCharacter())
                         {
-                            distance = Vector2.Distance(characterPosList[i], pos);
+                            distance = CalculateDistance(characterPosList[i], pos);
                             characterIndex = i;
                         }
                     }
@@ -985,6 +985,15 @@ public class MiniBattleCoreController : MonoBehaviour
     public void ResetMapTiles()
     {
         //mapController.ResetMapTitlesColor();
+    }
+
+    private int CalculateDistance(Vector2 posA, Vector2 posB)
+    {
+        float distance = 0;
+        distance = Mathf.Abs(posA.x - posB.x);
+        distance += Mathf.Abs(posA.y - posB.y);
+
+        return Mathf.RoundToInt(distance);
     }
 
 }
