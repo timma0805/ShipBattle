@@ -245,7 +245,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
         return new Vector2(slotID % maxSlotPerRow, slotID / maxSlotPerRow);
     }
 
-    public async Task<Vector2> ShowEffectArea(List<Vector2> vectors, bool needSelect, bool isAreaEffect)
+    public async Task<Vector2> ShowEffectArea(List<Vector2> vectors, bool needSelect, bool isAreaEffect, bool isPlayerAction)
     {
         try
         {
@@ -255,7 +255,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
                 int slotID = ConvertPosToSlotID(vectors[i]);
                 if (slotID >= 0 && slotID < characterSlotsList.Count)
                 {
-                    characterSlotsList[slotID].ShowEffectArea(needSelect, isAreaEffect);
+                    characterSlotsList[slotID].ShowEffectArea(needSelect, isAreaEffect, isPlayerAction);
                     hasEffectSlot = true;
                 }
             }

@@ -342,12 +342,12 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
 
     }
 
-    public void ShowEffectArea(bool needSelect, bool isAreaEffect)
+    public void ShowEffectArea(bool needSelect, bool isAreaEffect, bool isPlayerAction)
     {
         isSelecting = needSelect;
         isSelectingArea = isAreaEffect;
         selectBtn.gameObject.SetActive(isAreaEffect);
-        groundImg.color = Color.red;
+        groundImg.color = isPlayerAction? Color.green: Color.red;
     }
 
     public void Reset()

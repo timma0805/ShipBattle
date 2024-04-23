@@ -215,7 +215,7 @@ public class MiniBattleCoreController : MonoBehaviour
 
             if (item.EffectTarget == ItemEffectTarget.Any)
             {
-                Vector2 targetPos = await uiCharacterPanel.ShowEffectArea(characterPosList, true, false);
+                Vector2 targetPos = await uiCharacterPanel.ShowEffectArea(characterPosList, true, false, true);
                 _characterList.Add(characterList[characterPosList.FindIndex(x => x == targetPos)]);
             }
             else if (item.EffectTarget == ItemEffectTarget.Enemy)
@@ -400,7 +400,7 @@ public class MiniBattleCoreController : MonoBehaviour
                     continue;
 
                 Vector2 pos = characterPosList[i];
-                var (skillData, countDown) = await enemy.DoAction(pos, GetPlayerCharactersPosList());
+                var (skillData, countDown) = await enemy.DoAction(pos, GetPlayerCharactersPosList(), GetEnemyCharactersPosList());
 
                 if (skillData != null && countDown == 0)
                 {
@@ -450,7 +450,7 @@ public class MiniBattleCoreController : MonoBehaviour
                 {
                     List<Vector2> effectPosList = FindEnemySkillEffectArea(skillData, pos, characterList[i].GetFaceDirection(), countDown);
                     if(effectPosList.Count > 0) 
-                        uiCharacterPanel.ShowEffectArea(effectPosList, false, false);
+                        uiCharacterPanel.ShowEffectArea(effectPosList, false, false, false);
                     uiCharacterPanel.UpdateCountdown(pos, enemy.Countdown);
                 }
 
@@ -471,6 +471,19 @@ public class MiniBattleCoreController : MonoBehaviour
 
     }
 
+    private List<Vector2> GetEnemyCharactersPosList()
+    {
+        List<Vector2> result = new List<Vector2>();
+        for (int i = 0; i < characterList.Count; i++)
+        {
+            if (!characterList[i].IsPlayerCharacter())
+            {
+                result.Add(characterPosList[i]);
+            }
+        }
+
+        return result;
+    }
     private List<Vector2> GetPlayerCharactersPosList()
     {
         List<Vector2> result = new List<Vector2>();
@@ -891,7 +904,7 @@ public class MiniBattleCoreController : MonoBehaviour
             vectors.Add(pos);
 
 
-        Vector2 newpos = await uiCharacterPanel.ShowEffectArea(vectors, true, effect.isAreaEffect);
+        Vector2 newpos = await uiCharacterPanel.ShowEffectArea(vectors, true, effect.isAreaEffect, true);
 
         return newpos;
     }

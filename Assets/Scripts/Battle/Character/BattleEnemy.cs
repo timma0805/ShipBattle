@@ -11,7 +11,7 @@ public class BattleEnemy : BattleCharacter
     private EnemySkillData curEnemySkill;
     private EnemySkillData previosEnemySkill;
 
-    public async Task<(EnemySkillData, int)> DoAction(Vector2 pos, List<Vector2> playerPosList)
+    public async Task<(EnemySkillData, int)> DoAction(Vector2 pos, List<Vector2> playerPosList, List<Vector2> enemyPosList)
     {
         if(curEnemySkill != null)
         {
@@ -26,7 +26,7 @@ public class BattleEnemy : BattleCharacter
             for(int i = 0; i < enemyData.SkillList.Count; i++)
             {
                 var data = enemyData.SkillList[i];
-                if(CheckSkillCanUseOrNot(data, pos, playerPosList))
+                if(CheckSkillCanUseOrNot(data, pos, playerPosList, enemyPosList))
                     avaliableList.Add(data);
             }
 
@@ -45,7 +45,7 @@ public class BattleEnemy : BattleCharacter
         base.EndTurn();
     }
 
-    private bool CheckSkillCanUseOrNot(EnemySkillData skill, Vector2 pos, List<Vector2> playerPosList)
+    private bool CheckSkillCanUseOrNot(EnemySkillData skill, Vector2 pos, List<Vector2> playerPosList, List<Vector2> enemyPosList)
     {
         bool canUse = true;
         EnemyData enemyData = (EnemyData)base.characterData;
@@ -71,16 +71,40 @@ public class BattleEnemy : BattleCharacter
         if(!canUse)
             return false;
 
+        canUse = false;
         if (skill.Type != CardType.Move)
         {
             for (int i = 0; i < playerPosList.Count; i++)
             {
-                if (Vector2.Distance(pos, playerPosList[i]) > skill.Distance)
-                    return false;
+                if (CalculateDistance(pos, playerPosList[i]) < skill.Distance)
+                    return true;
+            }
+        }
+        else
+        {
+            for(int i = 1;i <=skill.Distance;i++)
+            {
+                if (playerPosList.FindIndex(x => x == new Vector2(pos.x+i, pos.y)) == -1)
+                    return true;
+                else if (playerPosList.FindIndex(x => x == new Vector2(pos.x-i, pos.y)) == -1)
+                    return true;
+                else if (playerPosList.FindIndex(x => x == new Vector2(pos.x, pos.y+i)) == -1)
+                    return true;
+                else if (playerPosList.FindIndex(x => x == new Vector2(pos.x, pos.y-i)) == -1)
+                    return true;
             }
         }
 
         return canUse;
+    }
+
+    private int CalculateDistance(Vector2 posA, Vector2 posB)
+    {
+        float distance = 0;
+        distance = Mathf.Abs(posA.x - posB.x);
+        distance+= Mathf.Abs(posA.y - posB.y);
+
+        return Mathf.RoundToInt(distance);
     }
 
     public override bool IsPlayerCharacter()
