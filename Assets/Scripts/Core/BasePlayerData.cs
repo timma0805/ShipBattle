@@ -11,7 +11,7 @@ public class BasePlayerData
     public List<int> UnlockCardIndex;
     public List<int> UnlockMemberIndex;
     public List<int> UnlockShipSkinIndex;
-    public List<int> UnlockShipEquipmentIndex;
+    public List<int> UnlockItemIndex;
 
     public BasePlayerData() {
         SaveIndex = 0;
@@ -21,6 +21,6 @@ public class BasePlayerData
         UnlockCardIndex = new List<int>();
         UnlockMemberIndex = new List<int>();
         UnlockShipSkinIndex = new List<int>();
-        UnlockShipEquipmentIndex = new List<int>();
+        UnlockItemIndex = new List<int>();
     }
 }

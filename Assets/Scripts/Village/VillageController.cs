@@ -5,23 +5,34 @@ using UnityEngine;
 
 public class VillageController : MonoBehaviour
 {
+    [SerializeField]
     private VillagePanelUI panelUI;
+    [SerializeField]
+    private VillageBattleStartPanelUI villageBattleStartPanelUI;
+    private PlayerController _playerController;
     private Action endCallback;
     private Camera _uiCamera;
-    private void Awake()
-    {
-        panelUI = GetComponent<VillagePanelUI>();
-    }
 
-    public void Init(Action _endCallback, Camera uiCamera)
+    private Action<int, BattlePlayerCharacterData> _startBattleCallback;
+    private int selectedMapIndex = 0;
+
+
+    public void Init(PlayerController playerController, List<BattlePlayerCharacterData> characterDatas, Action _endCallback, Camera uiCamera)
     {
+         _playerController = playerController;
         _uiCamera = uiCamera;
         endCallback = _endCallback;
 
+        List<BattlePlayerCharacterData> captainList = characterDatas.FindAll(x => x.Type == CharacterType.Captain);
         panelUI.Init(EndVillage, uiCamera);
-
+        villageBattleStartPanelUI.Init(captainList, StartBattle, panelUI.CloseSubPanel);
     }
 
+    public void StartInitVillage(Action<int, BattlePlayerCharacterData> startBattleCallback)
+    {
+        _startBattleCallback = startBattleCallback;
+        StartVillage(true);
+    }
 
     public void StartVillage(bool needCaptainChoosing)
     {
@@ -53,12 +64,12 @@ public class VillageController : MonoBehaviour
 
 
         gameObject.SetActive(true);
-        panelUI.ShowVillageWithAccessPoints(vector2s, strings, actions);
+        panelUI.ShowVillageWithAccessPoints(vector2s, strings, actions, !needCaptainChoosing);
     }
 
     public void OpenCaptainChoosePanel()
     {
-
+        villageBattleStartPanelUI.OpenPanel( _playerController.GetUnlockCharacterList());
     }
 
     public void OpenBarPanel()
@@ -74,6 +85,19 @@ public class VillageController : MonoBehaviour
     public void OpenRepairPanel()
     {
 
+    }
+
+    public async void StartBattle(BattlePlayerCharacterData data)
+    {
+        Debug.Log("StartBattle:" + data.ID);
+
+        if ( _startBattleCallback == null)
+            return;
+
+        await panelUI.CloseMapAnimation();
+        _startBattleCallback(selectedMapIndex, data);
+
+        EndVillage();
     }
 
 

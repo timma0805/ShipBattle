@@ -154,6 +154,7 @@ public enum ConditionCompare
 
 public enum BattleStage
     {
+        InitVillage,
         InitRun,
         Choosing,
         StartRun,

@@ -98,15 +98,26 @@
    "Speed": 2,
    "Attack": 1
  },
- {
-   "ID": 10,
-   "Name": "HunterCaptain",
-   "Type": "Captain",
-   "SkillSetStr": "1,2",
-   "CardSetStr": "91,92,93,94,95,96,97,98,99,100",
-   "EquipmentSetStr": -1,
-   "HP": 50,
-   "Speed": 2,
-   "Attack": 2
- }
+  {
+    "ID": 10,
+    "Name": "HunterCaptain",
+    "Type": "Captain",
+    "SkillSetStr": "1,2",
+    "CardSetStr": "91,92,93,94,95,96,97,98,99,100",
+    "EquipmentSetStr": -1,
+    "HP": 50,
+    "Speed": 2,
+    "Attack": 2
+  },
+  {
+    "ID": 11,
+    "Name": "TempCaptain",
+    "Type": "Captain",
+    "SkillSetStr": "1,2",
+    "CardSetStr": "91,92,93,94,95,96,97,98,99,100",
+    "EquipmentSetStr": -1,
+    "HP": 50,
+    "Speed": 2,
+    "Attack": 2
+  }
 ]

@@ -14,7 +14,8 @@ public class VillagePanelUI : MonoBehaviour
     private Sprite[] openBGSprites;
     [SerializeField]
     private Sprite[] closeBGSprites;
-
+    [SerializeField]
+    private Image maskImg;
     [SerializeField]
     private Image bgImg;
     [SerializeField]
@@ -58,14 +59,14 @@ public class VillagePanelUI : MonoBehaviour
         mapMaskEndPadding = bgImg.GetComponent<RectTransform>().rect.width/2;
         mapMaskPaddingGap = (mapMaskEndPadding - mapMaskStartPadding) / (openBGSprites.Length - dummyMapSpriteCount);
         leaveBtn.onClick.AddListener(LeaveVillage);
+
+        maskImg.gameObject.SetActive(false);
     }
 
     void Update()
     {
         // Get the mouse position
         Vector3 mousePosition = Input.mousePosition;
-
-    
 
         // Check if mouse is near the screen edge
         if (mousePosition.x <= moveThreshold) // Right edge
@@ -155,7 +156,7 @@ public class VillagePanelUI : MonoBehaviour
         }
     }
 
-    private async Task CloseMapAnimation()
+    public async Task CloseMapAnimation()
     {
         for (int i = 0; i < accessPoints.Length; i++)
         {
@@ -175,7 +176,7 @@ public class VillagePanelUI : MonoBehaviour
         }
     }
 
-    public async void ShowVillageWithAccessPoints(Vector2[] posList, string[] strings, Action[] callbacks)
+    public async void ShowVillageWithAccessPoints(Vector2[] posList, string[] strings, Action[] callbacks, bool needCloseBtn)
     {
         await OpenMapAnimation();
 
@@ -194,13 +195,25 @@ public class VillagePanelUI : MonoBehaviour
                 accessPoints[i].GetComponentInChildren<TMP_Text>().text = strings[i];
                 int temp = i;
                 accessPoints[i].onClick.AddListener(() => {
+                    OpenSubPanel();
                     _callbacks[temp]();
                 });
                accessPoints[i].gameObject.SetActive(true);
             }
         }
 
+        leaveBtn.gameObject.SetActive(needCloseBtn);
         gameObject.SetActive(true);
+    }
+
+    private void OpenSubPanel()
+    {
+        maskImg.gameObject.SetActive(true);
+    }
+
+    public void CloseSubPanel()
+    {
+        maskImg.gameObject.SetActive(false);
     }
 
     private async void LeaveVillage()

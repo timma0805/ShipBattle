@@ -21,6 +21,9 @@ public class BattleGameCoreController : MonoBehaviour
     [SerializeField]
     private PlayerController playerController;
     [SerializeField]
+    private GameObject playerPanelUIPrefab;
+    private PlayerPanelUI playerPanelUI;
+    [SerializeField]
     private GameObject oceanMapPrefab;
     private MapController mapController;
     [SerializeField]
@@ -39,6 +42,7 @@ public class BattleGameCoreController : MonoBehaviour
     //Current Data
     private BattleStage curBattleStage;
     private EntireMapData currentEntireMapData;
+    private BattlePlayerCharacterData currentCaptainData;
     private MapData currentMapData;
 
     #region Unity Activities
@@ -58,10 +62,10 @@ public class BattleGameCoreController : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
     // Start is called before the first frame update
-    void Start()
+    async void Start()
     {
-        InitPanels();
-        LoadBattleStage(BattleStage.InitRun);
+        await InitPanels();
+        LoadBattleStage(0);
     }
 
     // Update is called once per frame
@@ -79,6 +83,8 @@ public class BattleGameCoreController : MonoBehaviour
 
         //Load Player Data
         playerController.Init(jsonManager.characterDB, jsonManager.itemDB);
+        playerPanelUI = Instantiate(playerPanelUIPrefab).GetComponent<PlayerPanelUI>();
+        playerPanelUI.Init(playerController);
 
         mapController = Instantiate(oceanMapPrefab).GetComponent<MapController>();
         mapController.GetComponent<Canvas>().worldCamera = uiCamera;
@@ -88,9 +94,11 @@ public class BattleGameCoreController : MonoBehaviour
         villageController = Instantiate(villagePanelPrefab).GetComponent<VillageController>();
         villageController.GetComponent<Canvas>().worldCamera = uiCamera;
         villageController.gameObject.SetActive(false);
-        villageController.Init(() => {            
-            LoadBattleStage(BattleStage.EndVillage);
-        }, uiCamera);
+        villageController.Init(
+            playerController, 
+            jsonManager.characterDB.characters,
+            () => { LoadBattleStage(BattleStage.EndVillage);}
+            , uiCamera);
 
         eventController = Instantiate(eventPanelPrefab).GetComponent<SpecialEventController>();
         eventController.GetComponent<Canvas>().worldCamera = uiCamera;
@@ -123,7 +131,7 @@ public class BattleGameCoreController : MonoBehaviour
 
     private void LoadBattleStage(BattleStage nextStage)
     {
-        if (curBattleStage == nextStage && nextStage != BattleStage.InitRun)
+        if (curBattleStage == nextStage && nextStage != 0)
             return;
 
         curBattleStage = nextStage;
@@ -131,8 +139,11 @@ public class BattleGameCoreController : MonoBehaviour
 
         switch (curBattleStage)
         {
+            case BattleStage.InitVillage:
+                StartInitVillage();
+                break;
             case BattleStage.InitRun:
-                InitRun(0);
+                InitRun();
                 break;
             case BattleStage.StartRun:
                 StartRun();
@@ -164,14 +175,10 @@ public class BattleGameCoreController : MonoBehaviour
         }
     }
 
-    private void InitRun(int mapIndex)
+    private void InitRun()
     {
-        //Load Event Map
-        currentEntireMapData = mapController.SetupMapEvents(mapIndex);
         LoadBattleStage(BattleStage.StartRun);
     }
-
-
 
     private async Task StartRun()
     {
@@ -180,7 +187,7 @@ public class BattleGameCoreController : MonoBehaviour
     }
     private async Task EndRun()
     {
-
+        Debug.Log("EndRun");
     }
 
     public void ProcessMapData(MapData mapData)
@@ -211,6 +218,18 @@ public class BattleGameCoreController : MonoBehaviour
                 LoadBattleStage(BattleStage.StartBattle);
                 break;
         }
+    }
+
+    private async Task StartInitVillage()
+    {
+        villageController.StartInitVillage(EndInitVillage);
+    }
+
+    private void EndInitVillage(int mapIndex, BattlePlayerCharacterData captainData)
+    {
+        currentEntireMapData = mapController.SetupMapEvents(mapIndex);
+        currentCaptainData = captainData;
+        LoadBattleStage(BattleStage.InitRun);
     }
 
     private async Task StartEvent()

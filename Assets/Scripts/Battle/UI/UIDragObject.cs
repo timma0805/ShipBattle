@@ -13,7 +13,7 @@ public class UIDragObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
 
     protected virtual void Update()
     {
-        if (isDragging)
+        if (isDragging && camera != null)
         {
             Vector3 mousePosition = GetMouseWorldPosition();
             transform.position = new Vector3(mousePosition.x + offset.x, mousePosition.y + offset.y, transform.position.z);
@@ -27,6 +27,9 @@ public class UIDragObject : MonoBehaviour, IPointerDownHandler, IPointerUpHandle
 
     private Vector3 GetMouseWorldPosition()
     {
+        if(camera == null)
+            return Vector3.zero;
+
         Vector3 mousePosition = Input.mousePosition;
         //mousePosition.z = -Camera.main.transform.position.z;
         return camera.ScreenToWorldPoint(mousePosition);

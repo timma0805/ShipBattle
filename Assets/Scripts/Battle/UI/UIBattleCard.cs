@@ -113,17 +113,22 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
         if (!canDragging)
             return;
 
-        cardPanel.ShowEffectRange(cardData);
-        layoutElement.ignoreLayout = true;
+        if (cardPanel != null)
+        {
+            cardPanel.ShowEffectRange(cardData);
+            layoutElement.ignoreLayout = true;
+        }
     }
 
     protected override void OnPointerUp()
     {
         if (!canDragging)
             return;
-
-        layoutElement.ignoreLayout = false;
-        cardPanel.TryToUseCard(cardData);
+        if (cardPanel != null)
+        {
+            layoutElement.ignoreLayout = false;
+            cardPanel.TryToUseCard(cardData);
+        }
     }
 
     public void ShakeAnimation()
