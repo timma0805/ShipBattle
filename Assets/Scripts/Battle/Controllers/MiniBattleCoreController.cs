@@ -336,7 +336,8 @@ public class MiniBattleCoreController : MonoBehaviour
 
     public void PlayerSelectEndTurn()
     {
-        EndPlayerTurn();
+        if(currentStage == BattleStage.PlayerTurn)
+            EndPlayerTurn();
     }
 
     private async Task EndPlayerTurn()
