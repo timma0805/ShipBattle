@@ -11,7 +11,7 @@ public class BattleEnemy : BattleCharacter
     private EnemySkillData curEnemySkill;
     private EnemySkillData previosEnemySkill;
 
-    public async Task<(EnemySkillData, int)> DoAction(Vector2 pos, List<Vector2> playerPosList, List<Vector2> enemyPosList)
+    public async Task<(EnemySkillData, int)> DoAction(Vector2 pos, List<Vector2> playerPosList, List<Vector2> enemyPosList, List<Vector2> avaliablePosList)
     {
         if(curEnemySkill != null)
         {
@@ -26,7 +26,7 @@ public class BattleEnemy : BattleCharacter
             for(int i = 0; i < enemyData.SkillList.Count; i++)
             {
                 var data = enemyData.SkillList[i];
-                if(CheckSkillCanUseOrNot(data, pos, playerPosList, enemyPosList))
+                if(CheckSkillCanUseOrNot(data, pos, playerPosList, enemyPosList, avaliablePosList))
                     avaliableList.Add(data);
             }
 
@@ -45,7 +45,7 @@ public class BattleEnemy : BattleCharacter
         base.EndTurn();
     }
 
-    private bool CheckSkillCanUseOrNot(EnemySkillData skill, Vector2 pos, List<Vector2> playerPosList, List<Vector2> enemyPosList)
+    private bool CheckSkillCanUseOrNot(EnemySkillData skill, Vector2 pos, List<Vector2> playerPosList, List<Vector2> enemyPosList, List<Vector2> avaliablePosList)
     {
         bool canUse = true;
         EnemyData enemyData = (EnemyData)base.characterData;
@@ -82,15 +82,9 @@ public class BattleEnemy : BattleCharacter
         }
         else
         {
-            for(int i = 1;i <=skill.Distance;i++)
+            for(int i = 0;i < avaliablePosList.Count;i++)
             {
-                if (playerPosList.FindIndex(x => x == new Vector2(pos.x+i, pos.y)) == -1)
-                    return true;
-                else if (playerPosList.FindIndex(x => x == new Vector2(pos.x-i, pos.y)) == -1)
-                    return true;
-                else if (playerPosList.FindIndex(x => x == new Vector2(pos.x, pos.y+i)) == -1)
-                    return true;
-                else if (playerPosList.FindIndex(x => x == new Vector2(pos.x, pos.y-i)) == -1)
+                if(CalculateDistance(pos, avaliablePosList[i]) <= skill.Distance && playerPosList.FindIndex(x => x == avaliablePosList[i]) == -1 && enemyPosList.FindIndex(x => x == avaliablePosList[i]) == -1)
                     return true;
             }
         }

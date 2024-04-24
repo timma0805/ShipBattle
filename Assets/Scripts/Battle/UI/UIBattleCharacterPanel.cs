@@ -28,7 +28,8 @@ public class UIBattleCharacterPanel : MonoBehaviour
     private List<UIBattleCharacterSlot> characterSlotsList;
     private MiniBattleCoreController controller;
     //Setting
-    private const int maxSlotPerRow = 6;
+    public int maxSlotPerRow { get; private set; } = 6;
+    public int maxSlotPerColumn { get; private set; } = 3;
     private Vector2? waitSelectPos = null;
     private Vector2 cancelSelectPos = new Vector2(-99,-99);
     // Start is called before the first frame update

@@ -39,6 +39,7 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private List<BattleCharacter> characterList;
     private List<Vector2> characterPosList;
+    private List<Vector2> boardPosList;
 
     //Setting
     private const int maxMP = 99;
@@ -72,6 +73,7 @@ public class MiniBattleCoreController : MonoBehaviour
     {
         playerData = _battlePlayerData;
         entireMapData = _entireMapData;
+        boardPosList = GetAllPosList();
         RunStage(BattleStage.Init);
     }
 
@@ -400,7 +402,7 @@ public class MiniBattleCoreController : MonoBehaviour
                     continue;
 
                 Vector2 pos = characterPosList[i];
-                var (skillData, countDown) = await enemy.DoAction(pos, GetPlayerCharactersPosList(), GetEnemyCharactersPosList());
+                var (skillData, countDown) = await enemy.DoAction(pos, GetPlayerCharactersPosList(), GetEnemyCharactersPosList(), boardPosList);
 
                 if (skillData != null && countDown == 0)
                 {
@@ -484,6 +486,21 @@ public class MiniBattleCoreController : MonoBehaviour
 
         return result;
     }
+
+    private List<Vector2> GetAllPosList()
+    {
+        List<Vector2> result = new List<Vector2>();
+        for (int x = 0; x < uiCharacterPanel.maxSlotPerRow; x++)
+        {
+            for (int y = 0; y < uiCharacterPanel.maxSlotPerRow; y++)
+            {
+                result.Add(new Vector2(x, y)) ;
+            }
+        }
+
+        return result;
+    }
+
     private List<Vector2> GetPlayerCharactersPosList()
     {
         List<Vector2> result = new List<Vector2>();
@@ -506,7 +523,7 @@ public class MiniBattleCoreController : MonoBehaviour
         List<Vector2> effectPosList = new List<Vector2>();
 
         if (skill.Type == CardType.Move || countdown > 0)
-            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Any, false);
+            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Any, skill.Type == CardType.Move);
         else if (skill.Type == CardType.Heal)
             effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, CardEffectTarget.Enemy, false);
         else
@@ -625,6 +642,17 @@ public class MiniBattleCoreController : MonoBehaviour
             }
 
             targetpos = characterPosList[characterIndex];
+            Vector2 closePos = new Vector2(pos.x, pos.y);
+            for(int i = 0; i < effectPosList.Count; i++)
+            {
+                if (CalculateDistance(closePos, targetpos) > CalculateDistance(effectPosList[i] , targetpos))
+                {
+                    closePos = effectPosList[i];
+                }
+            }
+
+            return closePos;
+
             if (targetpos.x > pos.x)
             {
                 for (int i = (int)targetpos.x; i > pos.x; i--)
@@ -969,7 +997,9 @@ public class MiniBattleCoreController : MonoBehaviour
             {
                 if (effectTarget== CardEffectTarget.Ally || effectTarget == CardEffectTarget.Enemy)
                     resultVectors.Remove(vectors[i]);
-            }    
+                else if (vectors[i].x < 0 || vectors[i].x > uiCharacterPanel.maxSlotPerRow-1 || vectors[i].y < 0 || vectors[i].y > uiCharacterPanel.maxSlotPerColumn - 1)
+                    resultVectors.Remove(vectors[i]);
+            }
         }
 
 
