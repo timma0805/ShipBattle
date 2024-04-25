@@ -79,8 +79,12 @@ public class MapController : MonoBehaviour
                     //Create Start Point;
                     mapData.eventType = MapEventType.Start;
                 }
-
-                if (villiageCount == 0 && specialEventCount == 0 && enemyCounts == 0)  //finish small part
+                else if (depth == 1) // first point
+                {
+                    mapData.eventType = MapEventType.Enemy;
+                    enemyCounts--;
+                }
+                else if (villiageCount == 0 && specialEventCount == 0 && enemyCounts == 0)  //finish small part
                 {
                     (villiageCount, specialEventCount, enemyCounts) = GetMapSmallPartCounts(smallMapDepth);
 

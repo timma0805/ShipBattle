@@ -41,16 +41,18 @@ public class UIBattleCardsPanel : MonoBehaviour
     private bool isProcessingCard = false;
 
     //Setting
-    private int cardAvailableSlot = 10;
     private int drawInitCardAvailableCount = 5;
     private int drawCardAvailableCount = 3;
     private int redrawUsedCardsCount = 0;
+    private float cardWidth;
+    private float cardSlotWidth;
 
     // Start is called before the first frame update
     void Awake()
     {
         uiCamera = BattleGameCoreController.Instance.GetUICamera();
         cardsLayoutGroup = showCardsContent.GetComponent<GridLayoutGroup>();
+        cardSlotWidth = cardsLayoutGroup.GetComponent<RectTransform>().rect.width;
     }
 
     // Update is called once per frame
@@ -165,14 +167,7 @@ public class UIBattleCardsPanel : MonoBehaviour
             Card card = cardStackList[0];
             cardStackList.RemoveAt(0);
 
-            if (currentCardList.Count == cardAvailableSlot)  // need to burn drawn card
-            {
-                DiscardCard(card);
-            }
-            else
-            {
-                await AddToCurrentCards(card);
-            }
+            await AddToCurrentCards(card);
         }
     }
 
@@ -191,8 +186,19 @@ public class UIBattleCardsPanel : MonoBehaviour
             currentCard.CreateCard(this, card);
             cardList.Add(currentCard);
 
-            if (cardList.Count > 5)
-                cardsLayoutGroup.spacing = new Vector2(cardsLayoutGroup.spacing.x - 10, cardsLayoutGroup.spacing.y);
+            if (cardList.Count == 1)
+                cardWidth = currentCard.GetComponent<RectTransform>().rect.width;
+
+            if (cardList.Count > 6)
+            {
+                if (cardsLayoutGroup.spacing.x < 0 && -cardsLayoutGroup.spacing.x >= cardWidth - 10)
+                    Debug.Log("Max close");
+                else
+                {
+                    float spaceX = (cardSlotWidth - cardWidth * (cardList.Count + 1)) / cardList.Count;
+                    cardsLayoutGroup.spacing = new Vector2(spaceX, cardsLayoutGroup.spacing.y);
+                }
+            }
         }
         else //update card content
         {

@@ -1,3 +1,4 @@
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,16 +12,18 @@ public class BattleCharacter
     public CharacterState state { get; private set; }
     protected FaceDirection currentDirection;
     public Vector2 currentPos { get; private set; }
+    private Action<CharacterData,CharacterStatus> activeStatusCallback;
 
-    public virtual void Init(CharacterData data, Vector2 pos, FaceDirection direction)
+
+    public virtual void Init(CharacterData data, Vector2 pos, FaceDirection direction, Action<CharacterData,CharacterStatus> statusCallback)
     {
-        characterData = data;
-
         //init
+        characterData = data;
         state = CharacterState.Idle;
         statusDic = new Dictionary<CharacterStatus, float>();
         currentPos = pos;
         currentDirection = direction;
+        activeStatusCallback = statusCallback;
     }
 
     public virtual int BeAttacked(int value)
@@ -69,41 +72,76 @@ public class BattleCharacter
 
     public virtual void StartTurn()
     {
-        CheckStatus();
+        ActiveStatus();
     }
 
-    protected virtual void CheckStatus()
+    protected virtual void ActiveStatus()
     {
         if (statusDic.Count > 0)
         {
-            foreach (var status in statusDic)
-            {
-                if(status.Key == CharacterStatus.Bleed || status.Key == CharacterStatus.Fire || status.Key == CharacterStatus.Freeze || status.Key == CharacterStatus.Posion)
-                    characterData.CurHP -= (int)status.Value;
-            }
-
             List<CharacterStatus> keys = new List<CharacterStatus>(statusDic.Keys);
             foreach (CharacterStatus key in keys)
             {
                 if (Math.Truncate(statusDic[key]) == statusDic[key])
                 {
-                    if (key == CharacterStatus.Shield)
+                    if (key == CharacterStatus.Shield) //Shield will disappear after a round
                         statusDic[key] = 0;
                     else
                         statusDic[key] = statusDic[key] - 1.0f;
+
+                    ProcessStatus(key);
+                    if (activeStatusCallback  != null)
+                        activeStatusCallback(characterData, key);
                 }
                 else
                     statusDic[key] = statusDic[key] - 0.5f;
 
                 if (statusDic[key] <= 0)
                 {
-                    if (key == CharacterStatus.IncreaseAttack)
-                        characterData.Attack /= 2;
-
                     statusDic.Remove(key);
                 }
             }
         }
+    }
+    protected virtual void ProcessStatus(CharacterStatus status)
+    {
+        if (status == CharacterStatus.Bleed || status == CharacterStatus.Fire || status == CharacterStatus.Posion)
+            characterData.CurHP -= (int)statusDic[status];
+        else if (status == CharacterStatus.AfterPrepare)
+        {
+            if (!statusDic.ContainsKey(status))
+                statusDic.Add(status, 1);
+        }
+    }
+
+    public bool CheckSuccessWithStatus(CardType cardType, bool isTarget)
+    {
+        if(statusDic.ContainsKey(CharacterStatus.Stun) && !isTarget)
+            return false;
+        else if (statusDic.ContainsKey(CharacterStatus.Untargetable) && isTarget)
+            return false;
+
+        if (cardType == CardType.Attack || cardType == CardType.Special)
+        {
+            if(statusDic.ContainsKey(CharacterStatus.Dogde) && isTarget)
+                return false;
+
+            if (statusDic.ContainsKey(CharacterStatus.Blind) && !isTarget)
+                return false;
+
+            if (statusDic.ContainsKey(CharacterStatus.Shield) && isTarget)
+            {
+                statusDic.Remove(CharacterStatus.Shield);
+                return false;
+            }
+        }
+        else if(cardType == CardType.Move)
+        {
+            if (statusDic.ContainsKey(CharacterStatus.Unmovement) && !isTarget)
+                return false;
+        }
+
+        return true;
     }
 
     public virtual Dictionary<CharacterStatus, float> BeAddStatus(CardEffectType effectType, float value)
@@ -119,12 +157,11 @@ public class BattleCharacter
                 if (statusDic.ContainsKey((CharacterStatus)effectType))
                     statusDic[(CharacterStatus)effectType] += value;
                 else
+                {
                     statusDic.Add((CharacterStatus)effectType, value);
+                }
 
-                if(effectType == CardEffectType.IncreaseAttack)
-                    characterData.Attack *= 2;
-
-                if(statusDic[(CharacterStatus)effectType] <= 0)
+                if (statusDic[(CharacterStatus)effectType] <= 0)
                     statusDic.Remove((CharacterStatus)effectType);
             }
 
@@ -139,7 +176,7 @@ public class BattleCharacter
 
     public virtual void EndTurn()
     {
-        CheckStatus();
+        ActiveStatus();
     }
 
     public virtual bool IsPlayerCharacter()

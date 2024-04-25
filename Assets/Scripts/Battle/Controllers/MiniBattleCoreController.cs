@@ -40,6 +40,7 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private List<BattleCharacter> characterList;
     private List<Vector2> boardPosList;
+    private int currentRound;
 
     //Setting
     private int maxMP;
@@ -126,9 +127,9 @@ public class MiniBattleCoreController : MonoBehaviour
 
                 BattlePlayerCharacter battlePlayerCharacter = new BattlePlayerCharacter();
                 if (i < uiCharacterPanel.maxSlotPerColumn)
-                    battlePlayerCharacter.Init(playerData.battlePlayerCharacterList[i], new Vector2(0, i), FaceDirection.Front);
+                    battlePlayerCharacter.Init(playerData.battlePlayerCharacterList[i], new Vector2(0, i), FaceDirection.Front, ActiveCharacterStatus);
                 else
-                    battlePlayerCharacter.Init(playerData.battlePlayerCharacterList[i], new Vector2(1, i-3), FaceDirection.Front);
+                    battlePlayerCharacter.Init(playerData.battlePlayerCharacterList[i], new Vector2(1, i-3), FaceDirection.Front, ActiveCharacterStatus);
 
                 characterList.Add(battlePlayerCharacter);
             }
@@ -143,9 +144,9 @@ public class MiniBattleCoreController : MonoBehaviour
 
                 BattleEnemy battleEnemy = new BattleEnemy();
                 if (i < uiCharacterPanel.maxSlotPerColumn)
-                    battleEnemy.Init(entireMapData.EnemyDataList[i], new Vector2(5, i), FaceDirection.Front);
+                    battleEnemy.Init(entireMapData.EnemyDataList[i], new Vector2(5, i), FaceDirection.Front, ActiveCharacterStatus);
                 else
-                    battleEnemy.Init(entireMapData.EnemyDataList[i], new Vector2(4, i - 3), FaceDirection.Front);
+                    battleEnemy.Init(entireMapData.EnemyDataList[i], new Vector2(4, i - 3), FaceDirection.Front, ActiveCharacterStatus);
 
                 characterList.Add(battleEnemy);
             }
@@ -166,6 +167,7 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task StartGame()
     {
+        currentRound = 0;
         //Process Player Items
         ProcessPlayerItems(BattleStage.StartGame);
 
@@ -270,6 +272,8 @@ public class MiniBattleCoreController : MonoBehaviour
     {
         try
         {
+            currentRound++;
+
             currentMP++;
             if (currentMP > maxMP)
                 currentMP = maxMP;
@@ -303,17 +307,15 @@ public class MiniBattleCoreController : MonoBehaviour
         {
             if (currentStage != BattleStage.PlayerTurn || isPause)
                 return false;
+            BattleCharacter character = characterList.Find(x => x.GetCharacterData().ID == card._characterData.ID);
 
-            if (characterList.Find(x => x.GetCharacterData().ID == card._characterData.ID).statusDic.ContainsKey(CharacterStatus.Stun))
-                return false;
-
-            if (characterList.Find(x => x.GetCharacterData().ID == card._characterData.ID).statusDic.ContainsKey(CharacterStatus.Unmovement) && card._cardData.Type == CardType.Move)
+            if (!character.CheckSuccessWithStatus(card._cardData.Type, false))
                 return false;
 
             if (!await ProcessUsingCard(card))
                 return false;
 
-            if (!UseMP(card._cardData.Cost))
+            if (!UseMP(character, card._cardData.Cost))
                 return false;
 
             uIBattleCardsPanel.UpdateMP(currentMP, maxMP);
@@ -357,8 +359,8 @@ public class MiniBattleCoreController : MonoBehaviour
                 if (characterList[i].IsPlayerCharacter())
                 {
                     characterList[i].EndTurn();
-                    uiCharacterPanel.UpdateStatus(characterList[i].currentPos, characterList[i].statusDic, false);
                 }
+                uiCharacterPanel.UpdateStatus(characterList[i].currentPos, characterList[i].statusDic, false);
             }
 
             bool isAllDead = await CheckAllCharacterDie();
@@ -681,8 +683,8 @@ public class MiniBattleCoreController : MonoBehaviour
             if (!characterList[i].IsPlayerCharacter())
             {
                 characterList[i].EndTurn();
-                uiCharacterPanel.UpdateStatus(characterList[i].currentPos, characterList[i].statusDic, false);
             }
+            uiCharacterPanel.UpdateStatus(characterList[i].currentPos, characterList[i].statusDic, false);
         }
 
         bool isAllDead = await CheckAllCharacterDie();
@@ -752,9 +754,14 @@ public class MiniBattleCoreController : MonoBehaviour
         isPause = _isPause;
     }
 
-    private bool UseMP(int cost)
+    private bool UseMP(BattleCharacter character, int cost)
     {
-        if (currentMP - cost >= 0)
+        if(character.statusDic.ContainsKey(CharacterStatus.AfterPrepare))
+        {
+            character.BeAddStatus(CardEffectType.AfterPrepare, -1);
+            return true;
+        }
+        else if (currentMP - cost >= 0)
         {
             currentMP -= cost;
             return true;
@@ -765,10 +772,6 @@ public class MiniBattleCoreController : MonoBehaviour
 
     private async Task<bool> ProcessUsingCard(Card card)
     {
-        //Check MP
-        if (currentMP - card._cardData.Cost < 0)
-            return false;
-
         var characterIndex = characterList.FindIndex(x => x.GetCharacterData().ID == card._characterData.ID);
         if (characterIndex == -1)
         {
@@ -778,6 +781,16 @@ public class MiniBattleCoreController : MonoBehaviour
         var pos = characterList[characterIndex].currentPos;
         var character = characterList[characterIndex];
         var effectValue = card._cardData.Value;
+
+        //Check MP
+        if(character.statusDic.ContainsKey(CharacterStatus.AfterPrepare)) //No need MP cost
+        {
+
+        }
+        else if (currentMP - card._cardData.Cost < 0)
+            return false;
+
+
         if (card._cardData.EffectType == CardEffectType.Attack)
             effectValue = Mathf.RoundToInt(card._cardData.Value * character.GetCharacterData().Attack);
 
@@ -796,6 +809,11 @@ public class MiniBattleCoreController : MonoBehaviour
 
             if (target == null && card._cardData.Type != CardType.Move)
                 continue;
+            else if (target != null && !target.CheckSuccessWithStatus(card._cardData.Type, target == character))
+            {
+                uiCharacterPanel.UpdateStatus(target.currentPos, target.statusDic, true);
+                continue;
+            }
               
             if (card._cardData.Type == CardType.Move)
             {
@@ -853,8 +871,12 @@ public class MiniBattleCoreController : MonoBehaviour
                     await uiCharacterPanel.UpdateStatus(newpos, statusDic, j == newPosList.Count - 1);
                 }          
             }
-        }          
-       
+
+            uiCharacterPanel.UpdateStatus(target.currentPos, target.statusDic, true);
+        }
+
+        uiCharacterPanel.UpdateStatus(character.currentPos, character.statusDic, true);
+
         return true;
     } 
     
@@ -933,17 +955,6 @@ public class MiniBattleCoreController : MonoBehaviour
 
         return resultVectors;
     }
-    public void ShowCardEffectRange(Card card)
-    {
-        Debug.Log("ShowCardEffectRange");
-        //Vector2 startPos = mapController.GetPlayerCurrentPos();
-        //mapController.ShowCardEffectWithTitlesColor(startPos, rangeX, rangeY, direction, color);
-    }
-
-    public void ResetMapTiles()
-    {
-        //mapController.ResetMapTitlesColor();
-    }
 
     private int CalculateDistance(Vector2 posA, Vector2 posB)
     {
@@ -952,6 +963,12 @@ public class MiniBattleCoreController : MonoBehaviour
         distance += Mathf.Abs(posA.y - posB.y);
 
         return Mathf.RoundToInt(distance);
+    }
+
+    private void ActiveCharacterStatus(CharacterData characterData, CharacterStatus characterStatus)
+    {
+        if(characterData == null) return;
+
     }
 
 }

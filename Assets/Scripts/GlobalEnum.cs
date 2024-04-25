@@ -134,7 +134,8 @@ public enum CardEffectType
     Bleed,
     Fire,
     Freeze,
-    Prepare
+    Prepare,
+    AfterPrepare
 }
 
 public enum EnemyActionTarget
@@ -194,7 +195,8 @@ public enum BattleStage
         Bleed,
         Fire,
         Freeze,
-        Prepare
+        Prepare,
+        AfterPrepare
     }
 
     public enum Element

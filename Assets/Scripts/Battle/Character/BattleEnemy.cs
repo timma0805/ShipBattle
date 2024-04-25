@@ -106,7 +106,7 @@ public class BattleEnemy : BattleCharacter
         return false;
     }
 
-    protected override void CheckStatus()
+    protected override void ActiveStatus()
     {
         if (statusDic.Count > 0)
         {
@@ -117,7 +117,7 @@ public class BattleEnemy : BattleCharacter
             }
         }
 
-        base.CheckStatus();
+        base.ActiveStatus();
     }
 
     public int AddCountdown(int value)
