@@ -60,8 +60,8 @@ public class PlayerController : MonoBehaviour
 
         //Fake battle data
         battlePlayerData.battlePlayerCharacterList.Add(characterDB.characters.Find(x => x.ID == 10));
-        battlePlayerData.battlePlayerCharacterList.Add(characterDB.characters.Find(x => x.ID == 1));
-        battlePlayerData.battlePlayerCharacterList.Add(characterDB.characters.Find(x => x.ID == 2));
+        //battlePlayerData.battlePlayerCharacterList.Add(characterDB.characters.Find(x => x.ID == 1));
+        //battlePlayerData.battlePlayerCharacterList.Add(characterDB.characters.Find(x => x.ID == 2));
 
         battlePlayerData.itemList.Add(itemDB.items.Find(x => x.ID == 1));
         battlePlayerData.itemList.Add(itemDB.items.Find(x => x.ID == 2));

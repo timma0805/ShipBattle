@@ -57,6 +57,11 @@ public class JsonManager : MonoBehaviour
         {
             string json = Resources.Load("JSON/CardJson").ToString();
             cardDB = JsonConvert.DeserializeObject<CardsDB>("{\"cards\":" + json + "}");
+
+            for(int i = 0; i < cardDB.cards.Count; i++)
+            {
+                cardDB.cards[i].ParsePosList();
+            }
         }
         catch(Exception e)
         {
@@ -72,14 +77,16 @@ public class JsonManager : MonoBehaviour
 
             for (int i = 0; i < characterDB.characters.Count; i++)
             {
-                characterDB.characters[i].CardDataList = new List<CardData>();
+                characterDB.characters[i].CardList = new List<Card>();
                 string[] setStrs = characterDB.characters[i].CardSetStr.Split(',');
                 for (int j = 0; j < setStrs.Length; j++)
                 {
+                    int index = i;
                     int cardID = int.Parse(setStrs[j]);
                     CardData cardData = cardDB.cards.Find(x => x.ID == cardID);
+                    Card card = new Card(cardData, characterDB.characters[index]);
                     if (cardData != null)
-                        characterDB.characters[i].CardDataList.Add(cardData);
+                        characterDB.characters[index].CardList.Add(card);
                 }
             }
         }

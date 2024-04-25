@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using static JsonManager;
 using static UnityEditor.PlayerSettings;
 
 public class UIBattleCharacterPanel : MonoBehaviour
@@ -66,28 +67,53 @@ public class UIBattleCharacterPanel : MonoBehaviour
         Debug.Log("characterSlotsList Count:" + characterSlotsList.Count);
     }
 
-    public void StartBattle(List<BattleCharacter> battleCharacters, List<Vector2> charactersPos)
+    public void StartBattle(List<BattleCharacter> battleCharacters)
     {
 
         for (int i = 0;i < battleCharacters.Count;i++)
         {
             var data = battleCharacters[i].GetCharacterData();
             if(battleCharacters[i].IsPlayerCharacter() ) 
-                characterSlotsList[ConvertPosToSlotID(charactersPos[i])].ApplyCharacter(characterPrefabList[data.ID - 1], true, data.HP);
+                characterSlotsList[ConvertPosToSlotID(battleCharacters[i].currentPos)].ApplyCharacter(characterPrefabList[data.ID - 1], true, data.HP);
             else
-                characterSlotsList[ConvertPosToSlotID(charactersPos[i])].ApplyCharacter(enemyPrefabList[data.ID - 1], false, data.HP);
+                characterSlotsList[ConvertPosToSlotID(battleCharacters[i].currentPos)].ApplyCharacter(enemyPrefabList[data.ID - 1], false, data.HP);
         }
     }
 
-    public async Task<bool> MoveCharacter(Vector2 pos, Vector2 newpos, CharacterData characterData)
+    public async Task RotateCharacter(GameObject characterObj, bool isPlayer, FaceDirection faceDirection)
     {
-        if(pos == newpos) return false;
+        if (faceDirection != FaceDirection.Front || faceDirection != FaceDirection.Back)
+            return;
 
+        float scaleSize = 100;
+        if (isPlayer)
+        {
+            if (faceDirection == FaceDirection.Front)
+                characterObj.transform.localScale = new Vector3(-scaleSize, scaleSize, 1);
+            else
+                characterObj.transform.localScale = new Vector3(scaleSize, scaleSize, 1);
+        }
+        else
+        {
+            if (faceDirection == FaceDirection.Front)
+                characterObj.transform.localScale = new Vector3(scaleSize, scaleSize, 1);
+            else
+                characterObj.transform.localScale = new Vector3(-scaleSize, scaleSize, 1);
+        }
+    }
+
+    public async Task<bool> MoveCharacter(Vector2 pos, Vector2 newpos, FaceDirection faceDirection, CharacterData characterData)
+    {
         int slotID = ConvertPosToSlotID(pos);
         int targetSlotID = ConvertPosToSlotID(newpos);
-
         UIBattleCharacterSlot orginSlot = characterSlotsList.Find(x => x.slotid == slotID);
         UIBattleCharacterSlot targetSlot = characterSlotsList.Find(x => x.slotid == targetSlotID);
+
+        RotateCharacter(orginSlot.characterObj, orginSlot.isPlayerCharacter, faceDirection);
+
+        if (pos == newpos) 
+            return true;
+
         if (targetSlot == null)
         {
             targetSlot = orginSlot;
@@ -95,6 +121,8 @@ public class UIBattleCharacterPanel : MonoBehaviour
             return false;
         }
         orginSlot.HideInformation();
+      
+
         bool isSuccess = await targetSlot.MoveCharacterToSlot(orginSlot.characterObj, orginSlot.isPlayerCharacter, characterData);
         if (!isSuccess) 
             return false;

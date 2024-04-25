@@ -75,25 +75,27 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     {
         cardData = card;
 
-        bgImg.sprite = bgTypeSprite[(int)card.data.Type];
-        nameTxt.text = card.data.Name;
-        costTxt.text = card.data.Cost.ToString();
+        bgImg.sprite = bgTypeSprite[(int)card._cardData.Type];
+        nameTxt.text = card._cardData.Name;
+        costTxt.text = card._cardData.Cost.ToString();
         typeTxt.text = card.GetCardTypeName();
         detailTxt.text = card.GetCardDetailString();
-        occupationTxt.text = card.data.Occupation;
+        occupationTxt.text = card._characterData.Name;
     }
 
     public async Task ShowCard()
     {
         Debug.Log("Start ShowCard");
 
+        canDragging = false;
         layoutElement.ignoreLayout = false;
         this.gameObject.SetActive(true);
+        canDragging = true;
     }
 
-    public void Unvisible()
+    public void Invisible()
     {
-        Debug.Log("Unvisible");
+        Debug.Log("Invisible");
 
         if(layoutElement == null)
             layoutElement = GetComponent<LayoutElement>();
@@ -105,7 +107,7 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
 
     private  void onClickCard()
     {
-        Debug.Log("ClickCard: " + cardData.data.ID);
+        Debug.Log("ClickCard: " + cardData._cardData.ID);
     }
 
     protected override void OnPointerDown()

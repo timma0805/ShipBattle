@@ -119,13 +119,7 @@ public class PlayerPanelUI : MonoBehaviour
         crewNameTxt.text = characterData.Name;
         crewDescriptionTxt.text = characterData.Description;
 
-        List<Card> cardList = new List<Card>();
-        for(int i = 0; i < characterData.CardDataList.Count; i++) {
-            Card card = new Card(characterData.CardDataList[i]);
-            cardList.Add(card);
-        }
-
-        ShowCardList(cardList);
+        ShowCardList(characterData.CardList);
 
         crewInfoObj.SetActive(true);
     }
@@ -134,7 +128,7 @@ public class PlayerPanelUI : MonoBehaviour
     {
         for (int i = 0; i < cardUILIst.Count; i++)
         {
-            cardUILIst[i].Unvisible();
+            cardUILIst[i].Invisible();
         }
 
         for (int i = 0; i < cardDatas.Count; i++)

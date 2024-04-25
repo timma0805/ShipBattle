@@ -38,7 +38,6 @@ public class UIBattleCardsPanel : MonoBehaviour
     private List<Card> cardStackList;
 
     private MiniBattleCoreController battleController;
-    private List<Card> baseMoveCardList;
     private bool isProcessingCard = false;
 
     //Setting
@@ -65,34 +64,11 @@ public class UIBattleCardsPanel : MonoBehaviour
         battleController = _battleController;   
     }
 
-    public void StartBattle(List<CardData> cardDatas, List<string> occList)
+    public void StartBattle(List<Card> cardDatas)
     {
-        List<Card> cards = GenerateCards(cardDatas);
-        InitialCardStack(cards);
+        InitialCardStack(cardDatas);
         UpdateCardCount();
-
-        //Create base move cards
-        baseMoveCardList = new List<Card>();
-        for(int i = 0; i < occList.Count; i++)
-        {
-            CardData cardData = new CardData(occList[i]);
-            Card newcard = new Card(cardData);
-            baseMoveCardList.Add(newcard);
-        }
     }
-
-    private List<Card> GenerateCards(List<CardData> cardDatas)
-    {
-        List<Card> cards = new List<Card>();
-        for (int i = 0; i < cardDatas.Count; i++)
-        {
-            Card newcard = new Card(cardDatas[i]);
-            cards.Add(newcard);
-        }
-
-        return cards;
-    }
-
 
     private void InitialCardStack(List<Card> cards)
     {
@@ -106,7 +82,7 @@ public class UIBattleCardsPanel : MonoBehaviour
         {
             for (int i = 0;i < cardList.Count;i++)
             {
-                cardList[i].Unvisible();
+                cardList[i].Invisible();
             }
         }
         usedCardList = new List<Card>();
@@ -149,8 +125,14 @@ public class UIBattleCardsPanel : MonoBehaviour
         }
     }
 
+    public int GetCurrentCardListCount()
+    {
+        return currentCardList.Count;
+    }
+
     public async Task DrawCard()
     {
+        Debug.Log("DrawCard");
         if (currentCardList.Count == 0 && usedCardList.Count == 0)// just start
         {
             await DrawCards(drawInitCardAvailableCount);
@@ -169,6 +151,12 @@ public class UIBattleCardsPanel : MonoBehaviour
             if(cardStackList.Count == 0)
             {
                 Debug.Log("cardStackList Empty, Refresh");
+                if(usedCardList.Count == 0)
+                {
+                    Debug.Log("usedCardList Empty, All cards hold on hand");
+                    return;
+                }
+
                 redrawUsedCardsCount++;
                 cardStackList = ShuffleGOList(usedCardList);
                 usedCardList = new List<Card>();
@@ -186,15 +174,11 @@ public class UIBattleCardsPanel : MonoBehaviour
                 await AddToCurrentCards(card);
             }
         }
-        for(int i = 0; i < baseMoveCardList.Count;i++)
-        {
-            await AddToCurrentCards(baseMoveCardList[i]);
-        }
     }
 
     private async Task AddToCurrentCards(Card card)
     {
-        Debug.Log("AddToCurrentCards: " + card.data.Name);
+        Debug.Log("AddToCurrentCards: " + card._cardData.Name);
 
         currentCardList.Add(card);
         UIBattleCard currentCard;
@@ -226,31 +210,29 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     public void RemoveCardsWithCharacterDie(CharacterData characterData)
     {
-        cardStackList.RemoveAll(x => x.data.Occupation == characterData.Name);
-        currentCardList.RemoveAll(x => x.data.Occupation == characterData.Name);
-        baseMoveCardList.RemoveAll(x => x.data.Occupation == characterData.Name);
-        var cards = cardList.FindAll(x => x.cardData.data.Occupation == characterData.Name);
+        cardStackList.RemoveAll(x => x._characterData.ID == characterData.ID);
+        currentCardList.RemoveAll(x => x._characterData.ID == characterData.ID);
+        var cards = cardList.FindAll(x => x.cardData._characterData.ID == characterData.ID);
         foreach ( var card in cards )
         {
-            card.Unvisible();
+            card.Invisible();
         }
     }
 
     public void EndPlayerTurn()
     {
-        //Move current cards to used cards
-        for(int i = 0;i < currentCardList.Count;i++)
-        {
-            //Move to discard or used list
-            if (!currentCardList[i].data.Temp) //
-                usedCardList.Add(currentCardList[i]);
-            currentCardList.RemoveAt(i);
-        }
+        ////Move current cards to used cards
+        //for(int i = 0;i < currentCardList.Count;i++)
+        //{
+        //    //Move to discard or used list
+        //    usedCardList.Add(currentCardList[i]);
+        //    currentCardList.RemoveAt(i);
+        //}
 
-        for(int i = 0; i < cardList.Count; i++)
-        {
-            cardList[i].Unvisible();
-        }
+        //for(int i = 0; i < cardList.Count; i++)
+        //{
+        //    cardList[i].Invisible();
+        //}
 
         UpdateCardCount();
     }
@@ -262,7 +244,7 @@ public class UIBattleCardsPanel : MonoBehaviour
 
         isProcessingCard = true;
         int index = currentCardList.FindIndex(x => x == targetCard);
-        cardList[index].Unvisible();
+        cardList[index].Invisible();
         //Check can use or not
         if (!await battleController.UsePlayerCard(targetCard))
         {
@@ -274,12 +256,9 @@ public class UIBattleCardsPanel : MonoBehaviour
         }
 
         //Move to discard or used list
-        if (!targetCard.data.Temp)
-            usedCardList.Add(targetCard);
-
+        usedCardList.Add(targetCard);
         currentCardList.RemoveAt(index);
         UIBattleCard usedCard = cardList[index];
-        usedCard.Unvisible();
         cardList.RemoveAt(index);
         cardList.Add(usedCard);
 
@@ -290,7 +269,7 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     public void TryToUseCard(Card card)
     {
-        Debug.Log("TryToUseCard:" + card.data.ID);
+        Debug.Log("TryToUseCard:" + card._cardData.ID);
 
         if (!CheckMouseInDragArea())
             return;

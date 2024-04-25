@@ -12,13 +12,15 @@ public class BattleCharacter
     protected FaceDirection currentDirection;
     public Vector2 currentPos { get; private set; }
 
-    public virtual void Init(CharacterData data)
+    public virtual void Init(CharacterData data, Vector2 pos, FaceDirection direction)
     {
         characterData = data;
 
         //init
         state = CharacterState.Idle;
         statusDic = new Dictionary<CharacterStatus, float>();
+        currentPos = pos;
+        currentDirection = direction;
     }
 
     public virtual int BeAttacked(int value)
@@ -46,11 +48,12 @@ public class BattleCharacter
         return characterData.CurHP;
     }
 
-    public virtual void BeMoved(Vector2 pos, FaceDirection rotation)
+    public virtual void BeMoved(Vector2 pos, FaceDirection direction)
     {
-        Debug.Log("BeMoved" + pos.x + pos.y + rotation);
+        Debug.Log("BeMoved" + pos.x + pos.y + direction);
         currentPos = pos;
-        currentDirection = rotation;
+        if(direction == FaceDirection.Front || direction == FaceDirection.Back) 
+            currentDirection = direction;
     }
 
     public virtual int BeHealed(int value)

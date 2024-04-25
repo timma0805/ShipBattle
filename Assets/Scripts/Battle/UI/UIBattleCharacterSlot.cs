@@ -107,7 +107,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         statusTxt.text = string.Empty;
     }
 
-    public async Task<bool> MoveCharacterToSlot(GameObject newCharacter, bool isPlayer, CharacterData characterData)
+    public async Task<bool> MoveCharacterToSlot(GameObject newCharacter, bool isPlayer , CharacterData characterData)
     {
         if(characterObj != null)
         {
@@ -119,19 +119,19 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         isPlayerCharacter = isPlayer;
 
         newCharacter.transform.SetParent(transform);
-        Vector3 targetVector = new Vector3();
+        characterObj = newCharacter;
+        characterAnimator = newCharacter.GetComponent<Animator>();
 
+        Vector3 targetVector = new Vector3();
         if(isPlayer)
         {
-            targetVector = new Vector3(0, - 100.0f, 0);
+            targetVector = new Vector3(0, - 100.0f, 0);        
         }
         else
         {
-            targetVector = new Vector3(0, - 50.0f, 0);
+            targetVector = new Vector3(0, - 50.0f, 0);         
         }
 
-        characterObj = newCharacter;
-        characterAnimator = newCharacter.GetComponent<Animator>();
         PlayCharacterAnimation(CharacterAnimationEnum.walk);
         iTween.MoveTo(characterObj, iTween.Hash(
             "position", targetVector,
@@ -142,7 +142,9 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
             "oncompletetarget", gameObject, // Callback target,
             "oncompleteparams", tcs // Pass TaskCompletionSource as parameter
         ));
+
         await tcs.Task;
+
 
         UpdateHP(characterData.CurHP);
         PlayCharacterAnimation(CharacterAnimationEnum.idle);

@@ -9,7 +9,7 @@ public class BattlePlayerCharacterData: CharacterData
     public string CardSetStr;
     public string EquipmentSetStr;
 
-    public List<CardData> CardDataList;
+    public List<Card> CardList;
 
     public BattlePlayerCharacterData()
     {

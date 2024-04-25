@@ -207,8 +207,12 @@ public enum BattleStage
     {
         Front,
         Back,
+        Up,
+        Down,
         All,
-        No
+        Self,
+        No,
+        NA
     }
 
     public enum MapTitleEffect

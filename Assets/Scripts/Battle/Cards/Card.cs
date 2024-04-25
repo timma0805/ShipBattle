@@ -1,50 +1,34 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.U2D.Animation;
 using UnityEngine;
 using static CardData;
 
 [Serializable]
 public class Card
 {
-    public CardData data { get; private set; }
-    public List<CardEffect> effectList { get; private set; }
+    public CardData _cardData { get; private set; }
+    public CharacterData _characterData { get; private set; }
 
 
-    public Card(CardData _data)
+    public Card(CardData cardData, CharacterData characterData)
     {
-        try
-        {
-            data = _data;
-            effectList = new List<CardEffect>();
-
-            CardEffect effect = new CardEffect(_data.Target, _data.Effect, _data.Value, _data.Distance, _data.Direction, _data.Success, _data.IsAreaEffect, _data.IsAreaTriggerAfterDIstance);
-            effectList.Add(effect);
-
-            if (_data.Target2 != null)
-            {
-                CardEffect effect2 = new CardEffect(_data.Target2.Value, _data.Effect2.Value, _data.Value2.Value, _data.Distance2.Value, _data.Direction2.Value, _data.Success2.Value, _data.IsAreaEffect2.Value, _data.IsAreaTriggerAfterDIstance2.Value);
-                effectList.Add(effect2);
-            }
-        }
-        catch(System.Exception ex)
-        {
-            Debug.LogException(ex);
-        }
-
+        _cardData = cardData;
+        _characterData = characterData;
     }
 
     public string GetCardTypeName()
     {
-        if (data.Type == CardType.Attack )
+        if (_cardData.Type == CardType.Attack )
             return "Attack";
-        else if (data.Type == CardType.Defense)
+        else if (_cardData.Type == CardType.Defense)
             return "Defense";
-        else if (data.Type == CardType.Move)
+        else if (_cardData.Type == CardType.Move)
             return "Movement";
-        else if (data.Type == CardType.Heal)
+        else if (_cardData.Type == CardType.Heal)
             return "Heal";
-        else if (data.Type == CardType.Special)
+        else if (_cardData.Type == CardType.Special)
             return "Special";
         else
             return "????";
@@ -52,30 +36,6 @@ public class Card
 
     public string GetCardDetailString()
     {
-        string detailStr = "";
-
-        //if (data.conditionList.Count == 0)
-        //    detailStr += "No Condition\n";
-        //else
-        //{
-        //    for(int i = 0; i < data.conditionList.Count; i++)
-        //    {
-        //        var condition = data.conditionList[i];
-        //        detailStr += "Condition: \n Target: " + condition.effectTarget + condition.conditionValue + condition.conditionComapre + condition.conditionCompareValueStr + "\n";
-        //    }
-        //}
-
-        if (effectList.Count == 0)
-            detailStr += "No Effect\n";
-        else
-        {
-            for (int i = 0; i < effectList.Count; i++)
-            {
-                var effect = effectList[i];
-                detailStr += $"Effect: {effect.effectTarget}'s {effect.effectProperty} Take {effect.effectValue} \n";
-            }
-        }
-
-        return detailStr;
+        return _cardData.Description;
     }
 }
