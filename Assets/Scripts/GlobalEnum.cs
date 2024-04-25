@@ -112,6 +112,7 @@ public enum CardEffectType
 {
     No,
     Attack,
+    Heal,
     HP,
     MP,
     Move,   
@@ -119,9 +120,9 @@ public enum CardEffectType
     Push,
     Pull,
     Trap,
-    Defense,
     RemoveStatus,
     Untargetable = 100, //need same int value as CharacterStatus
+    Defense,
     Shield,
     Stun,
     IncreaseAttack,
@@ -132,7 +133,8 @@ public enum CardEffectType
     Weakness,
     Bleed,
     Fire,
-    Freeze
+    Freeze,
+    Prepare
 }
 
 public enum EnemyActionTarget
@@ -180,6 +182,7 @@ public enum BattleStage
     public enum CharacterStatus
     {
         Untargetable = 100, //need same int value as CardEffectType
+        Defense,
         Shield,
         Stun,
         IncreaseAttack,
@@ -190,7 +193,8 @@ public enum BattleStage
         Weakness,
         Bleed,
         Fire,
-        Freeze
+        Freeze,
+        Prepare
     }
 
     public enum Element

@@ -133,7 +133,7 @@ public class MiniBattleCoreController : MonoBehaviour
                 characterList.Add(battlePlayerCharacter);
             }
 
-            maxMP = characterList.Count;
+            maxMP = playerData.GetMaxMP();
 
             uIBattleCardsPanel.StartBattle(cardList);
 
@@ -778,7 +778,7 @@ public class MiniBattleCoreController : MonoBehaviour
         var pos = characterList[characterIndex].currentPos;
         var character = characterList[characterIndex];
         var effectValue = card._cardData.Value;
-        if (card._cardData.Effect == CardEffectType.Attack)
+        if (card._cardData.EffectType == CardEffectType.Attack)
             effectValue = Mathf.RoundToInt(card._cardData.Value * character.GetCharacterData().Attack);
 
         List<Vector2> newPosList = GetEffectPosList(pos, card._cardData.posList, card._cardData.Type == CardType.Move);
@@ -812,10 +812,17 @@ public class MiniBattleCoreController : MonoBehaviour
 
                 await uiCharacterPanel.Attack(pos, newpos, j == newPosList.Count - 1);
 
-                if (card._cardData.Effect == CardEffectType.Attack)
+                if (card._cardData.EffectType == CardEffectType.Attack)
                 {
                     if (target.statusDic.ContainsKey(CharacterStatus.Weakness))
                         effectValue *= 2;
+
+                    if (target.statusDic.ContainsKey(CharacterStatus.Defense))
+                    {
+                        effectValue = 1;
+                        var statusDic = target.BeAddStatus( CardEffectType.Defense, -1);
+                        await uiCharacterPanel.UpdateStatus(newpos, statusDic, j == newPosList.Count - 1);
+                    }
 
                     int hp = target.BeAttacked((int)effectValue);
                     await uiCharacterPanel.UpdateHP(newpos, hp, j == newPosList.Count - 1);
@@ -824,7 +831,7 @@ public class MiniBattleCoreController : MonoBehaviour
                 {
                     if (target.IsPlayerCharacter())
                         effectValue += 0.5f;
-                    var statusDic = target.BeAddStatus(card._cardData.Effect, effectValue);
+                    var statusDic = target.BeAddStatus(card._cardData.EffectType, effectValue);
                     await uiCharacterPanel.UpdateStatus(newpos, statusDic, j == newPosList.Count - 1);
                 }
 
@@ -841,7 +848,14 @@ public class MiniBattleCoreController : MonoBehaviour
     
     private List<Vector2> GetEffectPosList(Vector2 pos, List<Vector2> effectPosList, bool avoidCharacter)
     {
+
+        if(effectPosList.Count == 0)
+        {
+            return new List<Vector2> { pos };
+        }
+
         List<Vector2> vectors = new List<Vector2>();
+
         for (int i = 0; i < effectPosList.Count; i++)
         {
             Vector2 newPos = pos + effectPosList[i];

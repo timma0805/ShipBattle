@@ -334,6 +334,10 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
                     statusTxt.text += $"IncreaseAttack {item.Value} \n";
                 else if (item.Key == CharacterStatus.Fire)
                     statusTxt.text += $"Fire {item.Value} \n";
+                else if (item.Key == CharacterStatus.Defense)
+                    statusTxt.text += $"Defense {item.Value} \n";
+                else if (item.Key == CharacterStatus.Prepare)
+                    statusTxt.text += $"Prepare {item.Value} \n";
 
             }
         }

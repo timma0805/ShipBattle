@@ -123,6 +123,9 @@ public class BattleCharacter
 
                 if(effectType == CardEffectType.IncreaseAttack)
                     characterData.Attack *= 2;
+
+                if(statusDic[(CharacterStatus)effectType] <= 0)
+                    statusDic.Remove((CharacterStatus)effectType);
             }
 
             return statusDic;

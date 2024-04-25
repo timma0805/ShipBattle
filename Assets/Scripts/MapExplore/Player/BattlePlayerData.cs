@@ -23,4 +23,9 @@ public class BattlePlayerData
         battlePlayerCharacterList = new List<BattlePlayerCharacterData>();
         itemList = new List<ItemData>();
     }
+
+    public int GetMaxMP()
+    {
+        return battlePlayerCharacterList.Count+1;
+    }
 }

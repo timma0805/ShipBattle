@@ -11,7 +11,7 @@ public class CardData
     public CardType Type;
     public int Cost;
     public bool IsExhaust;
-    public CardEffectType Effect;
+    public CardEffectType EffectType;
     public float Value;
     public FaceDirection Direction;
     public string PosStr;
