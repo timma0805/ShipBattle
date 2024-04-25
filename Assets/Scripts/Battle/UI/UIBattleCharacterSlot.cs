@@ -42,6 +42,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
     private Animator characterAnimator;
     private bool isSelecting = false;
     private bool isSelectingArea = false;
+    private bool isLoopingAnimation = false;
 
     //Setting
     const float scaleSize = 100.0f;
@@ -132,7 +133,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
             targetVector = new Vector3(0, - 50.0f, 0);         
         }
 
-        PlayCharacterAnimation(CharacterAnimationEnum.walk);
+        PlayCharacterAnimation(CharacterAnimationEnum.walk, false);
         iTween.MoveTo(characterObj, iTween.Hash(
             "position", targetVector,
             "islocal", true,
@@ -147,7 +148,7 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
 
 
         UpdateHP(characterData.CurHP);
-        PlayCharacterAnimation(CharacterAnimationEnum.idle);
+        PlayCharacterAnimation(CharacterAnimationEnum.idle, false);
         await Task.Delay(100);
 
         return true;
@@ -160,9 +161,11 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         tcs.SetResult(true);
     }
 
-    public async Task PlayCharacterAnimation(CharacterAnimationEnum animationEnum)
+    public async Task PlayCharacterAnimation(CharacterAnimationEnum animationEnum, bool isLoop)
     {
         if(characterObj == null) return;
+
+        isLoopingAnimation = false;
 
         if (isPlayerCharacter)
         {
@@ -195,7 +198,19 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
                     break;
             }
 
-            characterAnimator.Play(animationName);
+            if(isLoop)
+            {
+                isLoopingAnimation = true;
+                while(isLoopingAnimation)
+                {
+                    if(!characterAnimator.GetCurrentAnimatorStateInfo(0).IsName("animationName"))
+                        characterAnimator.Play(animationName);
+
+                    await Task.Delay(100);
+                }
+            }
+            else
+                characterAnimator.Play(animationName);
         }
         else
         {

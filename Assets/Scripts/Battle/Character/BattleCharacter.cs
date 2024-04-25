@@ -14,7 +14,6 @@ public class BattleCharacter
     public Vector2 currentPos { get; private set; }
     private Action<CharacterData,CharacterStatus> activeStatusCallback;
 
-
     public virtual void Init(CharacterData data, Vector2 pos, FaceDirection direction, Action<CharacterData,CharacterStatus> statusCallback)
     {
         //init

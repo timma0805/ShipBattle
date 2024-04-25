@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.Reflection;
 
 [RequireComponent(typeof(LayoutElement))]
 [RequireComponent(typeof(Button))]
@@ -26,7 +27,18 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     private TMP_Text occupationTxt;
     [SerializeField]
     private Sprite[] bgTypeSprite;
-    
+    [SerializeField]
+    private Image arrowImg;
+    [SerializeField]
+    private Sprite[] arrowSprite;
+    [SerializeField]
+    private TMP_Text valueTxt;
+    [SerializeField]
+    private TMP_Text countdownTxt;
+    [SerializeField]
+    private Image startTile;
+    [SerializeField]
+    private Image[] tileList;
 
     private LayoutElement layoutElement;
     private Button button;
@@ -39,6 +51,8 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     //Setting
     private const float shakeDuration = 0.5f;
     private const float shakeIntensity = 1.0f;
+    private int startTileIndex  = -1;
+    private int tileWidth;
 
     private Coroutine shakeCoroutine;
 
@@ -56,7 +70,7 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     // Start is called before the first frame update
     void Start()
     {
-        button.onClick.AddListener(onClickCard);
+        button.onClick.AddListener(onClickCard);     
     }
 
     // Update is called once per frame
@@ -81,6 +95,56 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
         typeTxt.text = card.GetCardTypeName();
         detailTxt.text = card.GetCardDetailString();
         occupationTxt.text = card._characterData.Name;
+        valueTxt.text = card._cardData.Value.ToString();
+        countdownTxt.text = card._cardData.Countdown.ToString();
+
+        if (card._cardData.Direction != FaceDirection.NA)
+        {
+            if (card._cardData.Direction == FaceDirection.Back)
+                arrowImg.transform.Rotate(Vector3.forward, 180);
+            else if (card._cardData.Direction == FaceDirection.Up)
+                arrowImg.transform.Rotate(Vector3.forward, 90);
+            else if (card._cardData.Direction == FaceDirection.Down)
+                arrowImg.transform.Rotate(Vector3.forward, 270);
+
+            arrowImg.sprite = arrowSprite[(int)card._cardData.Type];
+        }
+        else
+        {
+            arrowImg.sprite = arrowSprite[0];
+        }
+
+        for(int i = 0; i < tileList.Length; i++) {
+            if(i  == startTileIndex)
+                tileList[i].color = Color.black;
+            else
+                tileList[i].color = Color.white;
+        }
+
+        if (card._cardData.posList.Count == 0)
+        {
+            startTile.color = Color.red;
+        }
+        else
+        {
+            if(startTileIndex == -1)
+            {
+                startTileIndex = Array.IndexOf(tileList, startTile);
+                tileWidth = startTile.transform.parent.GetComponent<GridLayoutGroup>().constraintCount;
+            }
+
+            for(int i = 0; i <  card._cardData.posList.Count; i++)
+            {
+                Vector2 vector = card._cardData.posList[i];
+                int index = startTileIndex;
+                index += (int)vector.x;
+                index += (int)vector.y*tileWidth;
+                if (index >= 0 && index < tileList.Length)
+                    tileList[index].color = Color.red;
+                else
+                    Debug.LogError($"Card {cardData._cardData.Name} Tile Out of Range");
+            }
+        }
     }
 
     public async Task ShowCard()

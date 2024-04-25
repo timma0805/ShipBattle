@@ -69,7 +69,6 @@ public class UIBattleCharacterPanel : MonoBehaviour
 
     public void StartBattle(List<BattleCharacter> battleCharacters)
     {
-
         for (int i = 0;i < battleCharacters.Count;i++)
         {
             var data = battleCharacters[i].GetCharacterData();
@@ -77,6 +76,11 @@ public class UIBattleCharacterPanel : MonoBehaviour
                 characterSlotsList[ConvertPosToSlotID(battleCharacters[i].currentPos)].ApplyCharacter(characterPrefabList[data.ID - 1], true, data.HP);
             else
                 characterSlotsList[ConvertPosToSlotID(battleCharacters[i].currentPos)].ApplyCharacter(enemyPrefabList[data.ID - 1], false, data.HP);
+        }
+
+        for (int i = 0; i < characterSlotsList.Count; i++)
+        {
+            characterSlotsList[i].Reset();
         }
     }
 
@@ -176,6 +180,16 @@ public class UIBattleCharacterPanel : MonoBehaviour
         PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.casting);
     }
 
+    public void CharacterCasting(Vector2 pos)
+    {
+        int slotID = ConvertPosToSlotID(pos);
+        if (slotID < 0 || slotID >= characterSlotsList.Count)
+            return;
+
+        UIBattleCharacterSlot targetSlot = characterSlotsList.Find(x => x.slotid == slotID);
+        PlayCharacterAnimation(targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum.casting, true);
+    }
+
     private void CharacterBeHeal(Vector2 pos)
     {
         int slotID = ConvertPosToSlotID(pos);
@@ -257,9 +271,9 @@ public class UIBattleCharacterPanel : MonoBehaviour
         characterSlotsList[slotID].UpdateCountdown(coundown);
     }
 
-    private void PlayCharacterAnimation(UIBattleCharacterSlot targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum characterAnimationEnum)
+    private void PlayCharacterAnimation(UIBattleCharacterSlot targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum characterAnimationEnum, bool isLoop = false)
     {
-        targetSlot.PlayCharacterAnimation(characterAnimationEnum);
+        targetSlot.PlayCharacterAnimation(characterAnimationEnum, isLoop);
     }
 
     private int ConvertPosToSlotID(Vector2 vector)

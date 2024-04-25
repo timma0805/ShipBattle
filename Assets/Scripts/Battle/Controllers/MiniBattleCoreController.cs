@@ -285,6 +285,11 @@ public class MiniBattleCoreController : MonoBehaviour
                 if (characterList[i].IsPlayerCharacter())
                 {
                     characterList[i].StartTurn();
+                    Card card = ((BattlePlayerCharacter)characterList[i]).ProcessCountdownCard();
+                    if (card != null)
+                    {
+                        await ProcessUsingCard(card, true);
+                    }
                     uiCharacterPanel.UpdateHP(characterList[i].currentPos, characterList[i].GetCharacterData().CurHP, false);
                     uiCharacterPanel.UpdateStatus(characterList[i].currentPos, characterList[i].statusDic, false);
                 }
@@ -312,7 +317,7 @@ public class MiniBattleCoreController : MonoBehaviour
             if (!character.CheckSuccessWithStatus(card._cardData.Type, false))
                 return false;
 
-            if (!await ProcessUsingCard(card))
+            if (!await ProcessUsingCard(card, false))
                 return false;
 
             if (!UseMP(character, card._cardData.Cost))
@@ -770,7 +775,7 @@ public class MiniBattleCoreController : MonoBehaviour
         return false;
     }
 
-    private async Task<bool> ProcessUsingCard(Card card)
+    private async Task<bool> ProcessUsingCard(Card card, bool ignoreCountdown)
     {
         var characterIndex = characterList.FindIndex(x => x.GetCharacterData().ID == card._characterData.ID);
         if (characterIndex == -1)
@@ -779,17 +784,25 @@ public class MiniBattleCoreController : MonoBehaviour
             return false;
         }
         var pos = characterList[characterIndex].currentPos;
-        var character = characterList[characterIndex];
+        var character = (BattlePlayerCharacter)characterList[characterIndex];
         var effectValue = card._cardData.Value;
 
         //Check MP
-        if(character.statusDic.ContainsKey(CharacterStatus.AfterPrepare)) //No need MP cost
+        if (character.statusDic.ContainsKey(CharacterStatus.AfterPrepare)) //No need MP cost
         {
 
         }
         else if (currentMP - card._cardData.Cost < 0)
             return false;
+        else if (character.IsCastingCard())
+            return false;
 
+        if(card._cardData.Countdown > 0 && !ignoreCountdown)
+        {
+            character.UseCountdownCard(card);
+            uiCharacterPanel.CharacterCasting(character.currentPos);
+            return true;
+        }
 
         if (card._cardData.EffectType == CardEffectType.Attack)
             effectValue = Mathf.RoundToInt(card._cardData.Value * character.GetCharacterData().Attack);
@@ -801,7 +814,7 @@ public class MiniBattleCoreController : MonoBehaviour
         }
 
         List<Vector2> newPosList = GetEffectPosList(pos, card._cardData.posList, card._cardData.Type == CardType.Move);
-
+        bool firstAction = true;
         for(int j = 0; j < newPosList.Count; j++)
         {
             Vector2 newpos = newPosList[j];
@@ -827,14 +840,14 @@ public class MiniBattleCoreController : MonoBehaviour
             {
                 await uiCharacterPanel.Heal(pos, newpos);
                 int hp = target.BeHealed((int)effectValue);
-                await uiCharacterPanel.UpdateHP(newpos, hp, j == newPosList.Count - 1);
+                await uiCharacterPanel.UpdateHP(newpos, hp, firstAction);
             }
             else
             {
                 if (target.statusDic.ContainsKey(CharacterStatus.Dogde))
                     effectValue = 0;
 
-                await uiCharacterPanel.Attack(pos, newpos, j == newPosList.Count - 1);
+                await uiCharacterPanel.Attack(pos, newpos, firstAction);
 
                 if (card._cardData.EffectType == CardEffectType.Attack)
                 {
@@ -845,11 +858,11 @@ public class MiniBattleCoreController : MonoBehaviour
                     {
                         effectValue = 1;
                         var statusDic = target.BeAddStatus( CardEffectType.Defense, -1);
-                        await uiCharacterPanel.UpdateStatus(newpos, statusDic, j == newPosList.Count - 1);
+                        await uiCharacterPanel.UpdateStatus(newpos, statusDic, firstAction);
                     }
 
                     int hp = target.BeAttacked((int)effectValue);
-                    await uiCharacterPanel.UpdateHP(newpos, hp, j == newPosList.Count - 1);
+                    await uiCharacterPanel.UpdateHP(newpos, hp, firstAction);
                 }
                 else if (card._cardData.EffectType == CardEffectType.Push)
                 {
@@ -868,11 +881,14 @@ public class MiniBattleCoreController : MonoBehaviour
                     if (target.IsPlayerCharacter())
                         effectValue += 0.5f;
                     var statusDic = target.BeAddStatus(card._cardData.EffectType, effectValue);
-                    await uiCharacterPanel.UpdateStatus(newpos, statusDic, j == newPosList.Count - 1);
-                }          
+                    await uiCharacterPanel.UpdateStatus(newpos, statusDic, firstAction);
+                }
+
+                firstAction = false;
             }
 
-            uiCharacterPanel.UpdateStatus(target.currentPos, target.statusDic, true);
+            if(target != null)
+                uiCharacterPanel.UpdateStatus(target.currentPos, target.statusDic, true);
         }
 
         uiCharacterPanel.UpdateStatus(character.currentPos, character.statusDic, true);
