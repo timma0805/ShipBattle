@@ -781,6 +781,12 @@ public class MiniBattleCoreController : MonoBehaviour
         if (card._cardData.EffectType == CardEffectType.Attack)
             effectValue = Mathf.RoundToInt(card._cardData.Value * character.GetCharacterData().Attack);
 
+        if (card._cardData.Direction != character.GetFaceDirection() && card._cardData.Direction != FaceDirection.NA) //Rotate character first
+        {
+            await uiCharacterPanel.MoveCharacter(pos, pos, card._cardData.Direction, character.GetCharacterData());
+            character.BeMoved(pos, card._cardData.Direction);
+        }
+
         List<Vector2> newPosList = GetEffectPosList(pos, card._cardData.posList, card._cardData.Type == CardType.Move);
 
         for(int j = 0; j < newPosList.Count; j++)
@@ -827,19 +833,25 @@ public class MiniBattleCoreController : MonoBehaviour
                     int hp = target.BeAttacked((int)effectValue);
                     await uiCharacterPanel.UpdateHP(newpos, hp, j == newPosList.Count - 1);
                 }
+                else if (card._cardData.EffectType == CardEffectType.Push)
+                {
+                    Vector2 targetNewPos = new Vector2();
+                    if(card._cardData.Direction == FaceDirection.Front)
+                        targetNewPos = new Vector2(target.currentPos.x+1, target.currentPos.y);
+                    else
+                        targetNewPos = new Vector2(target.currentPos.x - 1, target.currentPos.y);
+
+                    bool isSucess = await uiCharacterPanel.MoveCharacter(target.currentPos, targetNewPos, card._cardData.Direction, target.GetCharacterData());
+                    if (isSucess)
+                        target.BeMoved(targetNewPos, target.GetFaceDirection());
+                }
                 else if (effectValue != 0)
                 {
                     if (target.IsPlayerCharacter())
                         effectValue += 0.5f;
                     var statusDic = target.BeAddStatus(card._cardData.EffectType, effectValue);
                     await uiCharacterPanel.UpdateStatus(newpos, statusDic, j == newPosList.Count - 1);
-                }
-
-                if(card._cardData.Direction != character.GetFaceDirection() && card._cardData.Direction != FaceDirection.NA)
-                {
-                    await uiCharacterPanel.MoveCharacter(pos, pos, card._cardData.Direction, character.GetCharacterData());
-                    character.BeMoved(pos, card._cardData.Direction);
-                }
+                }          
             }
         }          
        

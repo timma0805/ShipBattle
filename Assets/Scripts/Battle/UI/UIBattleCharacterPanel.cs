@@ -82,7 +82,7 @@ public class UIBattleCharacterPanel : MonoBehaviour
 
     public async Task RotateCharacter(GameObject characterObj, bool isPlayer, FaceDirection faceDirection)
     {
-        if (faceDirection != FaceDirection.Front || faceDirection != FaceDirection.Back)
+        if (faceDirection != FaceDirection.Front && faceDirection != FaceDirection.Back)
             return;
 
         float scaleSize = 100;
