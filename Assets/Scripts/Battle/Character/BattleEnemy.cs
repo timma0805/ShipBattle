@@ -32,7 +32,12 @@ public class BattleEnemy : BattleCharacter
                     avaliableList.Add(data);
             }
 
-            if (avaliableList.FindIndex(x => x.Type == CardType.Attack || x.Type == CardType.Special) > 0)
+            if(avaliableList.Count == 0)
+            {
+                Debug.LogError("Enemy avaliableList.Count == 0");
+            }
+
+            if (avaliableList.FindIndex(x => x.Type == CardType.Attack || x.Type == CardType.Special) >= 0)
                 avaliableList = avaliableList.FindAll(x => x.Type == CardType.Attack || x.Type == CardType.Special);
 
             int randomIndex = Random.Range(0, avaliableList.Count);
@@ -90,7 +95,7 @@ public class BattleEnemy : BattleCharacter
         {
             for (int i = 0; i < playerPosList.Count; i++)
             {
-                if (CalculateDistance(pos, playerPosList[i]) < skill.Distance)
+                if (CalculateDistance(pos, playerPosList[i]) <= skill.Distance)
                     return true;
             }
         }

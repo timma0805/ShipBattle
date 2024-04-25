@@ -555,11 +555,11 @@ public class MiniBattleCoreController : MonoBehaviour
         List<Vector2> effectPosList = new List<Vector2>();
 
         if (skill.Type == CardType.Move || countdown > 0)
-            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction,  skill.Type == CardType.Move);
+            effectPosList = GetEnemySkillEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, skill.Type == CardType.Move);
         else if (skill.Type == CardType.Heal)
-            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, false);
+            effectPosList = GetEnemySkillEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, false);
         else
-            effectPosList = GetEffectArea(pos, (int)skill.Value, skill.Direction, false);
+            effectPosList = GetEnemySkillEffectArea(pos, (int)skill.Value, skill.Direction, faceDirection, false);
 
         return effectPosList;
     }
@@ -932,7 +932,7 @@ public class MiniBattleCoreController : MonoBehaviour
         return vectors;
     }
 
-    private List<Vector2> GetEffectArea(Vector2 pos, int distance, FaceDirection direction , bool avoidCharacter)
+    private List<Vector2> GetEnemySkillEffectArea(Vector2 pos, int distance, FaceDirection direction , FaceDirection characterDirection,  bool avoidCharacter)
     {
         List<Vector2> vectors = new List<Vector2>();
 
@@ -949,11 +949,17 @@ public class MiniBattleCoreController : MonoBehaviour
             {
                 if (direction == FaceDirection.Front)
                 {
-                    vectors.Add(new Vector2(pos.x + i, pos.y));
+                    if(characterDirection == FaceDirection.Front)
+                        vectors.Add(new Vector2(pos.x - i, pos.y));
+                    else
+                        vectors.Add(new Vector2(pos.x + i, pos.y));
                 }
                 else if (direction == FaceDirection.Back)
                 {
-                    vectors.Add(new Vector2(pos.x - i, pos.y));
+                    if(characterDirection == FaceDirection.Front)
+                        vectors.Add(new Vector2(pos.x + i, pos.y));
+                    else
+                        vectors.Add(new Vector2(pos.x - i, pos.y));
                 }
                 else if (direction == FaceDirection.Up)
                 {
