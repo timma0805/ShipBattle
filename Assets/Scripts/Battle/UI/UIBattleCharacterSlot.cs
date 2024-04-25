@@ -309,10 +309,10 @@ public class UIBattleCharacterSlot : MonoBehaviour, IPointerEnterHandler, IPoint
         hpTxt.text = "HP: " + hp.ToString();
     }
 
-    public void UpdateCountdown(int cd) { 
+    public void UpdateCountdown(string skillName, int cd) { 
 
         if(cd > 0) 
-            cdTxt.text = "CD: " + cd.ToString();
+            cdTxt.text = skillName + ": " + cd.ToString();
         else
             cdTxt.text = string.Empty;
     }

@@ -262,13 +262,13 @@ public class UIBattleCharacterPanel : MonoBehaviour
         characterSlotsList[slotID].UpdateStatus(statusDic);
     }
 
-    public void UpdateCountdown(Vector2 pos, int coundown)
+    public void UpdateCountdown(Vector2 pos, string skillName, int coundown)
     {
         int slotID = ConvertPosToSlotID(pos);
         if (slotID < 0 || slotID >= characterSlotsList.Count)
             return;
 
-        characterSlotsList[slotID].UpdateCountdown(coundown);
+        characterSlotsList[slotID].UpdateCountdown(skillName, coundown);
     }
 
     private void PlayCharacterAnimation(UIBattleCharacterSlot targetSlot, UIBattleCharacterSlot.CharacterAnimationEnum characterAnimationEnum, bool isLoop = false)

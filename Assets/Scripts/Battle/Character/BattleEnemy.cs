@@ -8,8 +8,10 @@ public class BattleEnemy : BattleCharacter
 {
     public int Countdown { get; private set; }
 
-    private EnemySkillData curEnemySkill;
+    public EnemySkillData curEnemySkill { get; private set; }
     private EnemySkillData previosEnemySkill;
+    public List< Vector2> effectPosList { get; private set; }
+
 
     public async Task<(EnemySkillData, int)> DoAction(Vector2 pos, List<Vector2> playerPosList, List<Vector2> enemyPosList, List<Vector2> avaliablePosList)
     {
@@ -30,6 +32,9 @@ public class BattleEnemy : BattleCharacter
                     avaliableList.Add(data);
             }
 
+            if (avaliableList.FindIndex(x => x.Type == CardType.Attack || x.Type == CardType.Special) > 0)
+                avaliableList = avaliableList.FindAll(x => x.Type == CardType.Attack || x.Type == CardType.Special);
+
             int randomIndex = Random.Range(0, avaliableList.Count);
             curEnemySkill = avaliableList[randomIndex];
             Countdown = curEnemySkill.Countdown;
@@ -38,10 +43,19 @@ public class BattleEnemy : BattleCharacter
         return (curEnemySkill, Countdown);
     }
 
+    public void SaveEffectPosList(List<Vector2> vectors)
+    {
+        effectPosList = vectors;
+    }
+
     public override void EndTurn()
     {
         if (curEnemySkill != null && Countdown == 0)
+        {
             curEnemySkill = null;
+            effectPosList = new List<Vector2>();
+        }
+
         base.EndTurn();
     }
 

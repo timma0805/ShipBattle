@@ -253,7 +253,7 @@ public class MiniBattleCoreController : MonoBehaviour
                     await uiCharacterPanel.UpdateStatus(pos, character.statusDic, item.EffectTime == ItemEffectTime.DuringBattle);
                 }
                 else if (item.Effect == ItemEffect.AddCountdown)
-                    uiCharacterPanel.UpdateCountdown(pos, ((BattleEnemy)character).AddCountdown(item.Value));
+                    uiCharacterPanel.UpdateCountdown(pos, ((BattleEnemy)character).curEnemySkill.Name, ((BattleEnemy)character).AddCountdown(item.Value));
 
             }
 
@@ -419,16 +419,19 @@ public class MiniBattleCoreController : MonoBehaviour
                 Vector2 pos = characterList[i].currentPos;
                 var (skillData, countDown) = await enemy.DoAction(pos, GetPlayerCharactersPosList(), GetEnemyCharactersPosList(), boardPosList);
 
-                if (skillData != null && countDown == 0)
+                if(skillData == null)
+                {
+                    Debug.LogError("Enemy skillData null");
+                }
+
+                if (countDown == 0)
                 {
                     if (skillData.Type == CardType.Attack)
                     {
                         if(skillData.Countdown > 0) //need to remove show effect
                         {
-                            List<Vector2> effectPosList = FindEnemySkillEffectArea(skillData, pos, characterList[i].GetFaceDirection(), skillData.Countdown);
-                            uiCharacterPanel.ClearEffectArea(effectPosList);
+                            uiCharacterPanel.ClearEffectArea(enemy.effectPosList);
                         }
-
 
                         Vector2 newpos = FindEnemySkillBestPos(skillData, pos, characterList[i].GetFaceDirection(), countDown);
                         if (newpos == pos)  //avoid attack himself
@@ -459,13 +462,20 @@ public class MiniBattleCoreController : MonoBehaviour
                         await uiCharacterPanel.UpdateHP(pos, hp, true);
                     }                 
                 }
-                else if(countDown > 0 && skillData.Type == CardType.Attack) 
+                else if(countDown > 0) 
                 {
-                    List<Vector2> effectPosList = FindEnemySkillEffectArea(skillData, pos, characterList[i].GetFaceDirection(), countDown);
-                    if(effectPosList.Count > 0) 
-                        uiCharacterPanel.ShowEffectArea(effectPosList, false, false, false);
-                    uiCharacterPanel.UpdateCountdown(pos, enemy.Countdown);
+                    if (skillData.Type == CardType.Attack)
+                    {
+                        List<Vector2> effectPosList = FindEnemySkillEffectArea(skillData, pos, characterList[i].GetFaceDirection(), countDown);
+                        if (effectPosList.Count > 0)
+                        {
+                            uiCharacterPanel.ShowEffectArea(effectPosList, false, false, false);
+                            enemy.SaveEffectPosList(effectPosList);
+                        }
+                    }               
                 }
+
+                uiCharacterPanel.UpdateCountdown(pos, skillData.Name, enemy.Countdown);
 
                 bool isAllDead = await CheckAllCharacterDie();
                 if (isAllDead)
