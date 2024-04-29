@@ -89,61 +89,70 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
     {
         cardData = card;
 
-        bgImg.sprite = bgTypeSprite[(int)card._cardData.Type];
-        nameTxt.text = card._cardData.Name;
-        costTxt.text = card._cardData.Cost.ToString();
+        bgImg.sprite = bgTypeSprite[(int)card.CardData.Type];
+        nameTxt.text = card.CardData.Name;
+        costTxt.text = card.CardData.Cost.ToString();
         typeTxt.text = card.GetCardTypeName();
         detailTxt.text = card.GetCardDetailString();
         occupationTxt.text = card._characterData.Name;
-        valueTxt.text = card._cardData.Value.ToString();
-        countdownTxt.text = card._cardData.Countdown.ToString();
+        countdownTxt.text = card.CardData.Countdown.ToString();
+        arrowImg.sprite = arrowSprite[(int)card.CardData.Type];
 
-        if (card._cardData.Direction != FaceDirection.NA)
+        if (!card.CardData.isCombined)
         {
-            if (card._cardData.Direction == FaceDirection.Back)
-                arrowImg.transform.Rotate(Vector3.forward, 180);
-            else if (card._cardData.Direction == FaceDirection.Up)
-                arrowImg.transform.Rotate(Vector3.forward, 90);
-            else if (card._cardData.Direction == FaceDirection.Down)
-                arrowImg.transform.Rotate(Vector3.forward, 270);
+            CardEffect cardEffect = card.CardData.EffectList[0];
+            valueTxt.text = cardEffect.Value.ToString();
 
-            arrowImg.sprite = arrowSprite[(int)card._cardData.Type];
-        }
-        else
-        {
-            arrowImg.sprite = arrowSprite[0];
-        }
-
-        for(int i = 0; i < tileList.Length; i++) {
-            if(i  == startTileIndex)
-                tileList[i].color = Color.black;
+            if (cardEffect.Direction != FaceDirection.NA)
+            {
+                if (cardEffect.Direction == FaceDirection.Back)
+                    arrowImg.transform.Rotate(Vector3.forward, 180);
+                else if (cardEffect.Direction == FaceDirection.Up)
+                    arrowImg.transform.Rotate(Vector3.forward, 90);
+                else if (cardEffect.Direction == FaceDirection.Down)
+                    arrowImg.transform.Rotate(Vector3.forward, 270);
+            }
             else
-                tileList[i].color = Color.white;
-        }
-
-        if (card._cardData.posList.Count == 0)
-        {
-            startTile.color = Color.red;
-        }
-        else
-        {
-            if(startTileIndex == -1)
             {
-                startTileIndex = Array.IndexOf(tileList, startTile);
-                tileWidth = startTile.transform.parent.GetComponent<GridLayoutGroup>().constraintCount;
+                arrowImg.sprite = arrowSprite[0];
             }
 
-            for(int i = 0; i <  card._cardData.posList.Count; i++)
+            for (int i = 0; i < tileList.Length; i++)
             {
-                Vector2 vector = card._cardData.posList[i];
-                int index = startTileIndex;
-                index += (int)vector.x;
-                index += (int)vector.y*tileWidth;
-                if (index >= 0 && index < tileList.Length)
-                    tileList[index].color = Color.red;
+                if (i == startTileIndex)
+                    tileList[i].color = Color.black;
                 else
-                    Debug.LogError($"Card {cardData._cardData.Name} Tile Out of Range");
+                    tileList[i].color = Color.white;
             }
+
+            if (cardEffect.PosList.Count == 0)
+            {
+                startTile.color = Color.red;
+            }
+            else
+            {
+                if (startTileIndex == -1)
+                {
+                    startTileIndex = Array.IndexOf(tileList, startTile);
+                    tileWidth = startTile.transform.parent.GetComponent<GridLayoutGroup>().constraintCount;
+                }
+
+                for (int i = 0; i < cardEffect.PosList.Count; i++)
+                {
+                    Vector2 vector = cardEffect.PosList[i];
+                    int index = startTileIndex;
+                    index += (int)vector.x;
+                    index += (int)vector.y * tileWidth;
+                    if (index >= 0 && index < tileList.Length)
+                        tileList[index].color = Color.red;
+                    else
+                        Debug.LogError($"Card {cardData.CardData.Name} Tile Out of Range");
+                }
+            }
+        }
+        else //TODO: Show combined card detail
+        {
+
         }
     }
 
@@ -171,7 +180,7 @@ public class UIBattleCard : UIDragObject, IPointerEnterHandler, IPointerExitHand
 
     private  void onClickCard()
     {
-        Debug.Log("ClickCard: " + cardData._cardData.ID);
+        Debug.Log("ClickCard: " + cardData.CardData.ID);
     }
 
     protected override void OnPointerDown()

@@ -8,9 +8,19 @@ using static CardData;
 [Serializable]
 public class Card
 {
-    public CardData _cardData { get; private set; }
+    private CardData _cardData;
+    private CardData _combinedCardData;
     public CharacterData _characterData { get; private set; }
 
+    public CardData CardData
+    {
+        get {
+            if (_combinedCardData != null)
+                return _combinedCardData;
+            else
+                return _cardData;
+        }
+    }
 
     public Card(CardData cardData, CharacterData characterData)
     {
@@ -32,6 +42,22 @@ public class Card
             return "Special";
         else
             return "????";
+    }
+
+    public bool  MakeCombineCard(CardData anotherCardData)
+    {
+        bool canCombine = true;
+        //Check Combine rule
+
+        if(!canCombine)
+            return false;
+
+        CardData combinedCard = new CardData(_cardData) ;
+        combinedCard.ID = int.Parse("9" + _cardData.ID.ToString()  + anotherCardData.ID.ToString());
+        combinedCard.Name = _cardData.Name + "+";
+        combinedCard.Description = _cardData.Description + "\n->\n" + anotherCardData.Description;
+
+        return canCombine;
     }
 
     public string GetCardDetailString()

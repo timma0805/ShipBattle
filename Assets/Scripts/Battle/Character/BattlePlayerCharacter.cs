@@ -20,7 +20,7 @@ public class BattlePlayerCharacter : BattleCharacter
     public void UseCountdownCard(Card card)
     {
         countdownCard = card;
-        countdown = card._cardData.Countdown;
+        countdown = card.CardData.Countdown;
     }
 
     public Card ProcessCountdownCard()

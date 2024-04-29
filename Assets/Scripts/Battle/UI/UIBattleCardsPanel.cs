@@ -46,6 +46,7 @@ public class UIBattleCardsPanel : MonoBehaviour
     private int redrawUsedCardsCount = 0;
     private float cardWidth;
     private float cardSlotWidth;
+    private float cardSlotSpacingX;
 
     // Start is called before the first frame update
     void Awake()
@@ -53,6 +54,7 @@ public class UIBattleCardsPanel : MonoBehaviour
         uiCamera = BattleGameCoreController.Instance.GetUICamera();
         cardsLayoutGroup = showCardsContent.GetComponent<GridLayoutGroup>();
         cardSlotWidth = cardsLayoutGroup.GetComponent<RectTransform>().rect.width;
+        cardSlotSpacingX = cardsLayoutGroup.spacing.x;
     }
 
     // Update is called once per frame
@@ -68,6 +70,7 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     public void StartBattle(List<Card> cardDatas)
     {
+        cardsLayoutGroup.spacing = new Vector2(cardSlotSpacingX, cardsLayoutGroup.spacing.y);
         InitialCardStack(cardDatas);
         UpdateCardCount();
     }
@@ -173,7 +176,7 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     private async Task AddToCurrentCards(Card card)
     {
-        Debug.Log("AddToCurrentCards: " + card._cardData.Name);
+        Debug.Log("AddToCurrentCards: " + card.CardData.Name);
 
         currentCardList.Add(card);
         UIBattleCard currentCard;
@@ -275,7 +278,7 @@ public class UIBattleCardsPanel : MonoBehaviour
 
     public void TryToUseCard(Card card)
     {
-        Debug.Log("TryToUseCard:" + card._cardData.ID);
+        Debug.Log("TryToUseCard:" + card.CardData.ID);
 
         if (!CheckMouseInDragArea())
             return;

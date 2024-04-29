@@ -11,22 +11,36 @@ public class CardData
     public CardType Type;
     public int Cost;
     public bool IsExhaust;
+    public int Countdown;
     public CardEffectType EffectType;
     public float Value;
     public FaceDirection Direction;
     public string PosStr;
-    public int Countdown;
+    public List<CardEffect> EffectList;
 
-    public List<Vector2> posList;
+    public bool isCombined = false;
 
-    public CardData() {
+    public CardData() { }
+    public CardData(CardData data) {
+        ID = data.ID;
+        Name = data.Name;
+        Description = data.Description;
+        Type = data.Type;
+        Cost = data.Cost;
+        IsExhaust = data.IsExhaust;
+        EffectType = data.EffectType;
+        Value = data.Value;
+        Direction = data.Direction;
+        PosStr = data.PosStr;
+        Countdown = data.Countdown;
     }
 
-    public void ParsePosList()
+    public void ParseEffect()
     {
         try
         {
-            posList = new List<Vector2>();
+            EffectList = new List<CardEffect>();
+            List<Vector2> posList = new List<Vector2>();
 
             if (PosStr.Contains(","))
             {
@@ -37,6 +51,9 @@ public class CardData
                     posList.Add(new Vector2(int.Parse(vStr[0]), int.Parse(vStr[1])));
                 }
             }
+
+            CardEffect effect = new CardEffect(EffectType, Value, Direction, posList);
+            EffectList.Add(effect);
         }
         catch (Exception e)
         {

@@ -46,6 +46,7 @@ public class VillagePanelUI : MonoBehaviour
     private const float moveThreshold = 25f; // Threshold distance from screen edge to start moving
     private float screenWidth;
     private float screenHeight;
+    private bool isAnimation = false;
 
     // Start is called before the first frame update
     private void Awake()
@@ -65,6 +66,9 @@ public class VillagePanelUI : MonoBehaviour
 
     void Update()
     {
+        if (isAnimation)
+            return;
+
         // Get the mouse position
         Vector3 mousePosition = Input.mousePosition;
 
@@ -139,6 +143,9 @@ public class VillagePanelUI : MonoBehaviour
 
     private async Task OpenMapAnimation()
     {
+        isAnimation = true;
+        bgRectTransform.localPosition = Vector3.zero;
+
         for (int i = 0; i < accessPoints.Length; i++)
         {
             accessPoints[i].gameObject.SetActive(false);
@@ -154,10 +161,14 @@ public class VillagePanelUI : MonoBehaviour
                 await Task.Delay(100);
             }
         }
+        isAnimation = false;
     }
 
     public async Task CloseMapAnimation()
     {
+        isAnimation = true;
+        bgRectTransform.localPosition = Vector3.zero;
+
         for (int i = 0; i < accessPoints.Length; i++)
         {
             accessPoints[i].gameObject.SetActive(false);
@@ -174,6 +185,7 @@ public class VillagePanelUI : MonoBehaviour
                 await Task.Delay(100);
             }
         }
+        isAnimation = false;
     }
 
     public async void ShowVillageWithAccessPoints(Vector2[] posList, string[] strings, Action[] callbacks, bool needCloseBtn)

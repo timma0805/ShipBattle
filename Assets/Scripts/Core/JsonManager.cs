@@ -60,7 +60,7 @@ public class JsonManager : MonoBehaviour
 
             for(int i = 0; i < cardDB.cards.Count; i++)
             {
-                cardDB.cards[i].ParsePosList();
+                cardDB.cards[i].ParseEffect();
             }
         }
         catch(Exception e)

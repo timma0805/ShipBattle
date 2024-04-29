@@ -314,13 +314,13 @@ public class MiniBattleCoreController : MonoBehaviour
                 return false;
             BattleCharacter character = characterList.Find(x => x.GetCharacterData().ID == card._characterData.ID);
 
-            if (!character.CheckSuccessWithStatus(card._cardData.Type, false))
+            if (!character.CheckSuccessWithStatus(card.CardData.Type, false))
                 return false;
 
             if (!await ProcessUsingCard(card, false))
                 return false;
 
-            if (!UseMP(character, card._cardData.Cost))
+            if (!UseMP(character, card.CardData.Cost))
                 return false;
 
             uIBattleCardsPanel.UpdateMP(currentMP, maxMP);
@@ -795,113 +795,118 @@ public class MiniBattleCoreController : MonoBehaviour
         }
         var pos = characterList[characterIndex].currentPos;
         var character = (BattlePlayerCharacter)characterList[characterIndex];
-        var effectValue = card._cardData.Value;
 
         //Check MP
         if (character.statusDic.ContainsKey(CharacterStatus.AfterPrepare)) //No need MP cost
         {
 
         }
-        else if (currentMP - card._cardData.Cost < 0)
+        else if (currentMP - card.CardData.Cost < 0)
             return false;
         else if (character.IsCastingCard())
             return false;
 
-        if(card._cardData.Countdown > 0 && !ignoreCountdown)
+        if(card.CardData.Countdown > 0 && !ignoreCountdown)
         {
             character.UseCountdownCard(card);
             uiCharacterPanel.CharacterCasting(character.currentPos);
             return true;
         }
 
-        if (card._cardData.EffectType == CardEffectType.Attack)
-            effectValue = Mathf.RoundToInt(card._cardData.Value * character.GetCharacterData().Attack);
-
-        if (card._cardData.Direction != character.GetFaceDirection() && card._cardData.Direction != FaceDirection.NA) //Rotate character first
+        for (int i = 0; i < card.CardData.EffectList.Count; i++)
         {
-            await uiCharacterPanel.MoveCharacter(pos, pos, card._cardData.Direction, character.GetCharacterData());
-            character.BeMoved(pos, card._cardData.Direction);
-        }
+            CardEffect cardEffect = card.CardData.EffectList[i];
+            var effectValue = cardEffect.Value;
 
-        List<Vector2> newPosList = GetEffectPosList(pos, card._cardData.posList, card._cardData.Type == CardType.Move);
-        bool firstAction = true;
-        for(int j = 0; j < newPosList.Count; j++)
-        {
-            Vector2 newpos = newPosList[j];
-            BattleCharacter target  = characterList.Find(x => x.currentPos == newpos);
+            if (cardEffect.Type == CardEffectType.Attack)
+                effectValue = Mathf.RoundToInt(cardEffect.Value * character.GetCharacterData().Attack);
 
-            if (target == null && card._cardData.Type != CardType.Move)
-                continue;
-            else if (target != null && !target.CheckSuccessWithStatus(card._cardData.Type, target == character))
+            if (cardEffect.Direction != character.GetFaceDirection() && cardEffect.Direction != FaceDirection.NA) //Rotate character first
             {
-                uiCharacterPanel.UpdateStatus(target.currentPos, target.statusDic, true);
-                continue;
+                await uiCharacterPanel.MoveCharacter(pos, pos, cardEffect.Direction, character.GetCharacterData());
+                character.BeMoved(pos, cardEffect.Direction);
             }
-              
-            if (card._cardData.Type == CardType.Move)
-            {
-                bool isSucess = await uiCharacterPanel.MoveCharacter(pos, newpos, card._cardData.Direction, character.GetCharacterData());
-                if (isSucess)
-                    character.BeMoved(newpos, card._cardData.Direction);
-                else
-                    return false;
-            }
-            else if (card._cardData.Type == CardType.Heal)
-            {
-                await uiCharacterPanel.Heal(pos, newpos);
-                int hp = target.BeHealed((int)effectValue);
-                await uiCharacterPanel.UpdateHP(newpos, hp, firstAction);
-            }
-            else
-            {
-                if (target.statusDic.ContainsKey(CharacterStatus.Dogde))
-                    effectValue = 0;
 
-                await uiCharacterPanel.Attack(pos, newpos, firstAction);
+            List<Vector2> newPosList = GetEffectPosList(pos, cardEffect.PosList, card.CardData.Type == CardType.Move);
+            bool firstAction = true;
+            for (int j = 0; j < newPosList.Count; j++)
+            {
+                Vector2 newpos = newPosList[j];
+                BattleCharacter target = characterList.Find(x => x.currentPos == newpos);
 
-                if (card._cardData.EffectType == CardEffectType.Attack)
+                if (target == null && card.CardData.Type != CardType.Move)
+                    continue;
+                else if (target != null && !target.CheckSuccessWithStatus(card.CardData.Type, target == character))
                 {
-                    if (target.statusDic.ContainsKey(CharacterStatus.Weakness))
-                        effectValue *= 2;
+                    uiCharacterPanel.UpdateStatus(target.currentPos, target.statusDic, true);
+                    continue;
+                }
 
-                    if (target.statusDic.ContainsKey(CharacterStatus.Defense))
+                if (card.CardData.Type == CardType.Move)
+                {
+                    bool isSucess = await uiCharacterPanel.MoveCharacter(pos, newpos, cardEffect.Direction, character.GetCharacterData());
+                    if (isSucess)
+                        character.BeMoved(newpos, cardEffect.Direction);
+                    else
+                        return false;
+                }
+                else if (card.CardData.Type == CardType.Heal)
+                {
+                    await uiCharacterPanel.Heal(pos, newpos);
+                    int hp = target.BeHealed((int)effectValue);
+                    await uiCharacterPanel.UpdateHP(newpos, hp, firstAction);
+                }
+                else
+                {
+                    if (target.statusDic.ContainsKey(CharacterStatus.Dogde))
+                        effectValue = 0;
+
+                    await uiCharacterPanel.Attack(pos, newpos, firstAction);
+
+                    if (cardEffect.Type == CardEffectType.Attack)
                     {
-                        effectValue = 1;
-                        var statusDic = target.BeAddStatus( CardEffectType.Defense, -1);
+                        if (target.statusDic.ContainsKey(CharacterStatus.Weakness))
+                            effectValue *= 2;
+
+                        if (target.statusDic.ContainsKey(CharacterStatus.Defense))
+                        {
+                            effectValue = 1;
+                            var statusDic = target.BeAddStatus(CardEffectType.Defense, -1);
+                            await uiCharacterPanel.UpdateStatus(newpos, statusDic, firstAction);
+                        }
+
+                        int hp = target.BeAttacked((int)effectValue);
+                        await uiCharacterPanel.UpdateHP(newpos, hp, firstAction);
+                    }
+                    else if (cardEffect.Type == CardEffectType.Push)
+                    {
+                        Vector2 targetNewPos = new Vector2();
+                        if (cardEffect.Direction == FaceDirection.Front)
+                            targetNewPos = new Vector2(target.currentPos.x + 1, target.currentPos.y);
+                        else
+                            targetNewPos = new Vector2(target.currentPos.x - 1, target.currentPos.y);
+
+                        bool isSucess = await uiCharacterPanel.MoveCharacter(target.currentPos, targetNewPos, cardEffect.Direction, target.GetCharacterData());
+                        if (isSucess)
+                            target.BeMoved(targetNewPos, target.GetFaceDirection());
+                    }
+                    else if (effectValue != 0)
+                    {
+                        if (target.IsPlayerCharacter())
+                            effectValue += 0.5f;
+                        var statusDic = target.BeAddStatus(cardEffect.Type, effectValue);
                         await uiCharacterPanel.UpdateStatus(newpos, statusDic, firstAction);
                     }
 
-                    int hp = target.BeAttacked((int)effectValue);
-                    await uiCharacterPanel.UpdateHP(newpos, hp, firstAction);
-                }
-                else if (card._cardData.EffectType == CardEffectType.Push)
-                {
-                    Vector2 targetNewPos = new Vector2();
-                    if(card._cardData.Direction == FaceDirection.Front)
-                        targetNewPos = new Vector2(target.currentPos.x+1, target.currentPos.y);
-                    else
-                        targetNewPos = new Vector2(target.currentPos.x - 1, target.currentPos.y);
-
-                    bool isSucess = await uiCharacterPanel.MoveCharacter(target.currentPos, targetNewPos, card._cardData.Direction, target.GetCharacterData());
-                    if (isSucess)
-                        target.BeMoved(targetNewPos, target.GetFaceDirection());
-                }
-                else if (effectValue != 0)
-                {
-                    if (target.IsPlayerCharacter())
-                        effectValue += 0.5f;
-                    var statusDic = target.BeAddStatus(card._cardData.EffectType, effectValue);
-                    await uiCharacterPanel.UpdateStatus(newpos, statusDic, firstAction);
+                    firstAction = false;
                 }
 
-                firstAction = false;
+                if (target != null)
+                    uiCharacterPanel.UpdateStatus(target.currentPos, target.statusDic, true);
             }
 
-            if(target != null)
-                uiCharacterPanel.UpdateStatus(target.currentPos, target.statusDic, true);
+            uiCharacterPanel.UpdateStatus(character.currentPos, character.statusDic, true);
         }
-
-        uiCharacterPanel.UpdateStatus(character.currentPos, character.statusDic, true);
 
         return true;
     } 
